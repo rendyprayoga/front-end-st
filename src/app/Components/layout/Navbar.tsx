@@ -11,6 +11,7 @@ import RenderIcon from "../Render/RenderIcon";
 import IconSignIn from "../icon/SignInLogo/IconSignIn";
 import { UserCircle, CaretDown } from "phosphor-react";
 export default function HeaderBullion() {
+  const username = "Admin";
   return (
     <StyledNavbar expand="lg" className="bg-body-tertiary">
       <>
@@ -25,6 +26,7 @@ export default function HeaderBullion() {
               title={
                 <DFlex>
                   <CaretDown size={16} />
+                  <TitleBasic>{username}</TitleBasic>
                   <UserCircle size={24} weight="regular" />
                 </DFlex>
               }
@@ -66,4 +68,13 @@ const StyledDropdown = styled(NavDropdown)`
   .dropdown-toggle::after {
     display: none !important; /* hilangkan caret default bootstrap */
   }
+`;
+
+const TitleBasic = styled.div`
+  color: var(--Font-Primary, #050506);
+
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
 `;

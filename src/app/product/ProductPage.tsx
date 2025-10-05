@@ -7,6 +7,9 @@ import {
 } from "../feature/product/interface/products.interface";
 import { getProducts } from "../feature/product/products";
 import ProductsForm from "../feature/components/form/ProductForm";
+import styled from "styled-components";
+import { Plus } from "phosphor-react";
+import { FlexColumn } from "../react-table/flex.styled";
 
 export default function ProductPage() {
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -34,19 +37,32 @@ export default function ProductPage() {
   };
 
   return (
-    <div className="p-4">
+    <div className="">
       <div className="d-flex justify-content-between mb-4">
-        <h1>Daftar Product</h1>
-        <Button variant="primary" size="lg" onClick={handleShow}>
+        <div className="d-flex flex-column">
+          <TitleBasic style={{ fontSize: "20px", fontWeight: "600" }}>
+            Daftar Product
+          </TitleBasic>
+          <Description>
+            Lihat semua produk yang tersedia di inventaris.
+          </Description>
+        </div>
+        <StyledButton size="lg" onClick={handleShow}>
+          <Plus size={20} />
           Tambah Product
-        </Button>
+        </StyledButton>
       </div>
 
       <TablePage products={products} />
 
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={handleClose} size="lg" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Tambah Products</Modal.Title>
+          <div className="d-flex flex-column">
+            <StyledTitle>Tambah Products</StyledTitle>
+            <Description>
+              Masukkan detail produk untuk menambahkannya ke inventaris.
+            </Description>
+          </div>
         </Modal.Header>
         <Modal.Body>
           <ProductsForm />
@@ -55,3 +71,49 @@ export default function ProductPage() {
     </div>
   );
 }
+
+const TitleBasic = styled.div`
+  color: var(--Font-Primary, #050506);
+
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+`;
+
+const Description = styled.div`
+  overflow: hidden;
+  color: var(--Font-Secondary, #5b5d63);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 140%;
+`;
+
+const StyledButton = styled(Button as any)`
+  display: flex;
+  height: 40px;
+  padding: var(--Padding-p-0, 0) var(--Padding-p-12, 12px);
+  justify-content: center;
+  align-items: center;
+  gap: var(--Gap-g-8, 8px);
+  border-radius: 10px;
+  background: var(--Primary-500, #ff7900);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  border: none;
+
+  &: hover {
+    background: var(--Primary-200, #ff7900);
+  }
+`;
+
+const StyledTitle = styled(Modal.Title)`
+  color: var(--Font-Primary, #020c1f);
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 28px;
+`;
