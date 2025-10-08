@@ -8,4 +8,6 @@ price:number;
 export interface IParamsGetProduct{
 skip:number;
 limit:number;
+ sortBy?: string; 
+  order?: "asc" | "desc";
 }
