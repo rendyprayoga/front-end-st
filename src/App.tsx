@@ -1,20 +1,37 @@
-import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "./app/feature/auth/LoginPage";
-import ProductsDetails from "./app/feature/product/product/ProductsDetails";
+import ProductsDetails from "./app/Components/admin/product/product/ProductsDetails";
+import { PrivateRoute } from "./app/routes/PrivateRoutes";
+import ViewProduct from "./app/Components/user/view/ViewProduct";
 
-function ProductsRouting() {
+function App() {
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/product-details" element={<ProductsDetails />} />
-          {/* <Route path="detail/:id" element={<ProductsDetail />} /> */}
-        </Routes>
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+
+        {/* Admin Only */}
+        <Route
+          path="/product-details"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <ProductsDetails />
+            </PrivateRoute>
+          }
+        />
+
+        {/* User Only */}
+        <Route
+          path="/view-product"
+          element={
+            <PrivateRoute allowedRoles={["user"]}>
+              <ViewProduct />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
-export default ProductsRouting;
+export default App;

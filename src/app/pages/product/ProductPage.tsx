@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
-import TablePage from "../feature/product/product/TablePage";
+import TablePage from "../../Components/admin/product/product/TablePage";
 import {
   IParamsGetProduct,
   IProduct,
-} from "../feature/product/interface/products.interface";
-import { getProducts } from "../feature/product/product/productsAPI";
-import ProductsForm from "../feature/product/product/ProductForm";
+} from "../../Components/admin/product/interface/products.interface";
+import { getProducts } from "../../Components/admin/product/product/productsAPI";
+import ProductsForm from "../../Components/admin/product/product/ProductForm";
 import styled from "styled-components";
 import { Plus } from "phosphor-react";
-import { FlexColumn } from "../react-table/flex.styled";
+import { FlexColumn } from "../../react-table/flex.styled";
 
 export default function ProductPage() {
   // const [products, setProducts] = useState<IProduct[]>([]);

@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Container, Modal, Table } from "react-bootstrap";
+import { Button, Container, Dropdown, Modal, Table } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { IParamsGetProduct, IProduct } from "../interface/products.interface";
 import ProductsForm from "./ProductForm";
 import { deleteProduct, getProducts } from "./productsAPI";
 import styled from "styled-components";
+import { DotsThree } from "phosphor-react";
 
 function ProductsList() {
   const navigate = useNavigate();
@@ -83,17 +84,23 @@ function ProductsList() {
     <>
       <div>
         <div className="d-flex justify-content-between">
-          <TitleBasic>Daftar Product</TitleBasic>
+          <div className="d-flex flex-column gap-2">
+            <StyledTitle>Daftar Product</StyledTitle>
+            <Description>
+              Lihat semua produk yang tersedia di inventaris.
+            </Description>
+          </div>
           <StyledButton onClick={handleShow}>Tambah Product</StyledButton>
         </div>
         <Table>
           <thead>
             <tr>
-              <th>No</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Price</th>
-              <th>Action</th>
+              <th className="w-5">No</th>
+              <th className="w-20">Name</th>
+              <th className="w-20">Description</th>
+              <th className="w-10">Price</th>
+              <th className="w-10"></th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -104,24 +111,31 @@ function ProductsList() {
                   <td>{product.title}</td>
                   <td>{product.description}</td>
                   <td>$ {product.price}</td>
-                  <td className="d-flex gap-2">
-                    <Button
-                      variant="warning"
-                      onClick={() => navigate(String(product?.id))}
-                    >
-                      Detail
-                    </Button>
-                    <Button variant="info" onClick={() => onClickEdit(product)}>
-                      Edit
-                    </Button>
-                    <Button
-                      variant="danger"
-                      onClick={() =>
-                        setModalDelete({ show: true, data: product })
-                      }
-                    >
-                      Delete
-                    </Button>
+                  <td
+                    className="cursor-pointer "
+                    onClick={() => navigate(String(product?.id))}
+                  >
+                    Lihat Detail
+                  </td>
+                  <td>
+                    <Dropdown>
+                      <StyledToggle variant="" className="border-0 p-0">
+                        <DotsThree size={32} />
+                      </StyledToggle>
+                      <StyledDropdownMenu>
+                        <Dropdown.Item
+                          onClick={() =>
+                            setModalDelete({ show: true, data: product })
+                          }
+                        >
+                          Delete
+                        </Dropdown.Item>
+
+                        <Dropdown.Item onClick={() => onClickEdit(product)}>
+                          Edit
+                        </Dropdown.Item>
+                      </StyledDropdownMenu>
+                    </Dropdown>
                   </td>
                 </tr>
               </React.Fragment>
@@ -207,4 +221,31 @@ const StyledTitle = styled(Modal.Title)`
   font-style: normal;
   font-weight: 600;
   line-height: 28px;
+`;
+
+const StyledDropdownMenu = styled(Dropdown.Menu)`
+  border-radius: 0.5rem;
+  border: 1px solid #e1e2e5;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+  padding: 0.5rem 0;
+
+   .dropdown-item {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--black);
+
+    &:hover {
+      background-color: var(--black-50); 
+  
+    }
+`;
+
+const StyledToggle = styled(Dropdown.Toggle)`
+  border: none;
+  background: transparent;
+  padding: 0;
+
+  &::after {
+    display: none !important;
+  }
 `;
