@@ -1,24 +1,23 @@
-export const authService= {
-    login: async (email:string, password:string) =>{
-        // const response = await fetch('http://localhost:4000/users/login', {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({ email, password }),
-        //   });
-        //   return response.json();   
+export const authService = {
+  login: async (email: string, password: string) => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/v1/auth/login ', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Login gagal, periksa email/password");
+      }
 
-        if (email==="admin@gmail.com" && password==="admin") {
-         return {
-        success: true,
-        token: "dummy-jwt-token",
-        user: { id: 1, name: "Admin", email },
-      };
+      const data = await response.json();
+      return data;  
+    } catch (error) {
+      throw error;
     }
-    throw new Error("Invalid email or password");
-    }
-}
-
+  },
+};

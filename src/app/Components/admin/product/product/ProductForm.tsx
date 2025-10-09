@@ -6,7 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { IProduct } from "../interface/products.interface";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import styled from "styled-components";
-import { DFlexJustifyEnd } from "../../../react-table/flex.styled";
+import { DFlexJustifyEnd } from "../../../../react-table/flex.styled";
 import { createProduct, updateProduct } from "./productsAPI";
 
 interface Props {

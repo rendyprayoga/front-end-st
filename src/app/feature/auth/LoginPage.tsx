@@ -42,9 +42,15 @@ const LoginPage: React.FC = () => {
       setError("");
       setSuccess("");
       const res = await authService.login(data.email, data.password);
+
       localStorage.setItem("token", res.token);
-      navigate("/product-details");
-      //   setSuccess(`Login berhasil! Selamat datang, ${res.user.name}`);
+      localStorage.setItem("user", JSON.stringify(res.user));
+
+      if (res.user?.role === "admin") {
+        navigate("/product-details");
+      } else {
+        navigate("/view-product");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
