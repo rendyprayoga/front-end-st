@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { IProduct } from "./interface/products.interface";
 
 const API_BASE_URL = "https://dummyjson.com";
-
+// const API_BASE_URL="http://127.0.0.1:8000/api/v1/products";
 export const createProduct = async (product: IProduct): Promise<IProduct> => {
   const response: AxiosResponse<IProduct> = await axios.post(
     `${API_BASE_URL}/products/add`,
