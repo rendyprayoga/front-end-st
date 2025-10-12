@@ -39,7 +39,6 @@ function ProductsForm({ callbackSubmit, dataSelected }: Props) {
     },
   });
 
-  // ✅ Update Mode: Reset form with selected data
   useEffect(() => {
     if (dataSelected) reset(dataSelected);
   }, [dataSelected]);

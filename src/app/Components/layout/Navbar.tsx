@@ -17,7 +17,7 @@ export default function HeaderBullion() {
   const full_name = user.full_name || "User";
 
   return (
-    <StyledNavbar expand="lg" className="bg-body-tertiary">
+    <StyledNavbar expand="lg">
       <Navbar.Brand as={NavLink} to="/">
         <IconSignIn />
       </Navbar.Brand>

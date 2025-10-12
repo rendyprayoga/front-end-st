@@ -16,7 +16,7 @@ export const createProduct = async (product: IProduct): Promise<IProduct> => {
 export const getProducts = async (params?: IParamsGetProduct): Promise<IProduct[]> => {
   const response: AxiosResponse<IProduct[]> = await axios.get(
     `${API_BASE_URL}`,
-    { params } // ✅ langsung kirim params ke axios, otomatis jadi query
+    { params } 
   );
   return response.data;
 };
