@@ -1,19 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Dropdown, Modal, Table } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { IParamsGetProduct, IProduct } from "../interface/products.interface";
-import ProductsForm from "./ProductForm";
-import { deleteProduct, getProducts } from "./productsAPI";
 import styled from "styled-components";
 import { DotsThree } from "phosphor-react";
+import {
+  IManagementGetUser,
+  IManagementUser,
+} from "../interface/managementuser.interface";
+import ManagementForm from "./ManagementForm";
+import { deleteUsers, getUsers } from "../managementAPI";
 
-function ProductsList() {
+function ManagementList() {
   const navigate = useNavigate();
 
-  const [products, setProducts] = useState<IProduct[]>([]);
+  const [users, setUsers] = useState<IManagementUser[]>([]);
   const [show, setShow] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [dataSelected, setDataSelected] = useState<IProduct>();
+  const [dataSelected, setDataSelected] = useState<IManagementUser>();
   const triggerGet = useRef<number>(0);
 
   const [modalDelete, setModalDelete] = useState<any>({
@@ -25,34 +28,32 @@ function ProductsList() {
 
   const handleShow = () => {
     setDataSelected({
-      name: "",
-      description: "",
-      price: 0,
-      category: "",
-      stock: 0,
-      status: "",
+      email: "",
+      full_name: "",
+      role: "",
+      is_active: "true",
     });
     setShow(true);
   };
 
   useEffect(() => {
-    const params: IParamsGetProduct = {
+    const params: IManagementGetUser = {
       skip: 0,
       limit: 10,
       sortBy: "id",
       order: "asc",
     };
-    getProductData(params);
+    getUserData(params);
 
     return () => {
       console.log("clean");
     };
   }, [triggerGet, refreshTrigger]);
 
-  const getProductData = async (params: IParamsGetProduct) => {
+  const getUserData = async (params: IManagementGetUser) => {
     try {
-      const request: any = await getProducts({ ...params });
-      setProducts(request);
+      const request: any = await getUsers({ ...params });
+      setUsers(request);
     } catch (error) {
       console.log(error);
     }
@@ -63,7 +64,7 @@ function ProductsList() {
     handleClose();
   };
 
-  const onClickEdit = (item: IProduct) => {
+  const onClickEdit = (item: IManagementUser) => {
     setDataSelected(item);
     setShow(true);
   };
@@ -76,13 +77,13 @@ function ProductsList() {
     if (type === "x") {
       handleCloseModalDelete();
     } else {
-      deleteProductById();
+      deleteUserById();
     }
   };
 
-  const deleteProductById = async () => {
+  const deleteUserById = async () => {
     try {
-      await deleteProduct(String(modalDelete?.data?.id));
+      await deleteUsers(String(modalDelete?.data?.id));
       handleCloseModalDelete();
       triggerGet.current = Date.now();
     } catch (error) {}
@@ -93,16 +94,14 @@ function ProductsList() {
       <div>
         <div className="d-flex justify-content-between">
           <div className="d-flex flex-column gap-2 pb-4">
-            <StyledTitle>Daftar Product</StyledTitle>
-            <Description>
-              Lihat semua produk yang tersedia di inventaris.
-            </Description>
+            <StyledTitle>Management User</StyledTitle>
+            <Description>Lihat semua user yang tersedia di sistem.</Description>
           </div>
           <div className="d-flex gap-2">
             <StyledButtonWithout onClick={() => setRefreshTrigger(Date.now())}>
-              Perbarui stock
+              Refresh Data
             </StyledButtonWithout>
-            <StyledButton onClick={handleShow}>Tambah Product</StyledButton>
+            <StyledButton onClick={handleShow}>Tambah User</StyledButton>
           </div>
         </div>
 
@@ -110,26 +109,28 @@ function ProductsList() {
           <thead>
             <tr>
               <th>No</th>
-              <th>Nama Produk</th>
-              <th>Kategori</th>
-              <th>Stok</th>
-              <th>Harga</th>
+              <th>Nama User</th>
+              <th>Full Name</th>
+              <th>Role</th>
               <th>Status</th>
+              <th>Created At</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {products.map((product, index: number) => (
-              <React.Fragment key={product.id}>
+            {users.map((user, index: number) => (
+              <React.Fragment key={user.id}>
                 <tr>
                   <td>{index + 1}</td>
-                  <td>{product.name}</td>
-                  <td>{product.category}</td>
-                  <td>{product.stock}</td>
+                  <td>{user.email}</td>
+                  <td>{user.full_name}</td>
+                  <td>{user.role}</td>
+                  <td>{user.is_active === "true" ? "Active" : "Inactive"}</td>
                   <td>
-                    Rp {new Intl.NumberFormat("id-ID").format(product.price)}
+                    {user.created_at
+                      ? new Date(user.created_at).toLocaleDateString()
+                      : "-"}
                   </td>
-                  <td>{product.status}</td>
                   <td>
                     <Dropdown>
                       <StyledToggle variant="" className="border-0 p-0">
@@ -138,12 +139,12 @@ function ProductsList() {
                       <StyledDropdownMenu>
                         <Dropdown.Item
                           onClick={() =>
-                            setModalDelete({ show: true, data: product })
+                            setModalDelete({ show: true, data: user })
                           }
                         >
                           Delete
                         </Dropdown.Item>
-                        <Dropdown.Item onClick={() => onClickEdit(product)}>
+                        <Dropdown.Item onClick={() => onClickEdit(user)}>
                           Edit
                         </Dropdown.Item>
                       </StyledDropdownMenu>
@@ -158,10 +159,10 @@ function ProductsList() {
 
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Form Product</Modal.Title>
+          <Modal.Title>Form User</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <ProductsForm
+          <ManagementForm
             callbackSubmit={callbackSubmit}
             dataSelected={dataSelected}
           />
@@ -170,7 +171,7 @@ function ProductsList() {
 
       <Modal show={modalDelete?.show} size="sm">
         <Modal.Header>
-          <Modal.Title>Delete Product</Modal.Title>
+          <Modal.Title>Delete User</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>Apakah anda yakin?</p>
@@ -188,7 +189,7 @@ function ProductsList() {
   );
 }
 
-export default ProductsList;
+export default ManagementList;
 
 const TitleBasic = styled.div`
   font-size: 14px;
@@ -199,7 +200,6 @@ const Description = styled.div`
   font-size: 14px;
   color: #5b5d63;
 `;
-
 const StyledButton = styled(Button as any)`
   height: 40px;
   padding: 0 12px;
@@ -237,10 +237,8 @@ line-height: 1.25rem;
 `;
 
 const StyledTitle = styled(Modal.Title)`
-  font-size: 1.25rem;
-  font-style: normal;
+  font-size: 20px;
   font-weight: 600;
-  line-height: 140%;
 `;
 
 const StyledDropdownMenu = styled(Dropdown.Menu)`

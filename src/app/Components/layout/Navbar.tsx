@@ -1,47 +1,70 @@
 import React from "react";
-import { Button } from "react-bootstrap";
-import Container from "react-bootstrap/Container";
-import Nav from "react-bootstrap/Nav";
-import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
-import { DFlex } from "../../react-table/flex.styled";
-import RenderIcon from "../Render/RenderIcon";
-import IconSignIn from "../icon/SignInLogo/IconSignIn";
+import { Navbar, NavDropdown } from "react-bootstrap";
 import { UserCircle, CaretDown } from "phosphor-react";
+import { DFlex } from "../../react-table/flex.styled";
+import IconSignIn from "../icon/SignInLogo/IconSignIn";
+
 export default function HeaderBullion() {
-  const username = "Admin";
+  const storedUser = localStorage.getItem("user");
+
+  const user: { full_name: string; role: string } = storedUser
+    ? JSON.parse(storedUser)
+    : { full_name: "", role: "" };
+
+  const role = user.role || "guest";
+  const full_name = user.full_name || "User";
+
   return (
-    <StyledNavbar expand="lg" className="bg-body-tertiary">
-      <>
-        <Navbar.Brand href="#home">
-          {" "}
-          <IconSignIn />
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
-            <StyledDropdown
-              title={
-                <DFlex>
-                  <CaretDown size={16} />
-                  <TitleBasic>{username}</TitleBasic>
-                  <UserCircle size={24} weight="regular" />
-                </DFlex>
-              }
-              id="basic-nav-dropdown"
-              align="end"
-            >
-              <NavDropdown.Item href="">Action</NavDropdown.Item>
-              <NavDropdown.Item href="">Another action</NavDropdown.Item>
-              <NavDropdown.Item href="">Something</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="">Log Out</NavDropdown.Item>
-            </StyledDropdown>
-          </Nav>
-        </Navbar.Collapse>
-      </>
+    <StyledNavbar expand="lg">
+      <Navbar.Brand as={NavLink} to="/">
+        <IconSignIn />
+      </Navbar.Brand>
+
+      <StyledDropdown
+        title={
+          <DFlex>
+            <CaretDown size={16} />
+            <TitleBasic>{full_name}</TitleBasic>
+            <UserCircle size={24} weight="regular" />
+          </DFlex>
+        }
+        id="basic-nav-dropdown"
+        align="end"
+      >
+        {role === "admin" && (
+          <>
+            <NavDropdown.Item as={NavLink} to="/product-details">
+              Products
+            </NavDropdown.Item>
+            <NavDropdown.Item as={NavLink} to="/management-users">
+              Manage Users
+            </NavDropdown.Item>
+            <NavDropdown.Divider />
+          </>
+        )}
+
+        {role === "user" && (
+          <>
+            <NavDropdown.Item as={NavLink} to="/view-product">
+              View Products
+            </NavDropdown.Item>
+            <NavDropdown.Divider />
+          </>
+        )}
+
+        <NavDropdown.Item>Profile</NavDropdown.Item>
+        <NavDropdown.Divider />
+        <NavDropdown.Item
+          onClick={() => {
+            localStorage.clear();
+            window.location.href = "/";
+          }}
+        >
+          Log Out
+        </NavDropdown.Item>
+      </StyledDropdown>
     </StyledNavbar>
   );
 }
@@ -54,6 +77,7 @@ const StyledNavbar = styled(Navbar)`
   justify-content: space-between;
   align-items: center;
 `;
+
 const StyledDropdown = styled(NavDropdown)`
   .dropdown-toggle {
     background: none !important;
@@ -64,17 +88,14 @@ const StyledDropdown = styled(NavDropdown)`
     gap: 6px;
     color: #333;
   }
-
   .dropdown-toggle::after {
-    display: none !important; /* hilangkan caret default bootstrap */
+    display: none !important;
   }
 `;
 
 const TitleBasic = styled.div`
   color: var(--Font-Primary, #050506);
-
   font-size: 14px;
-  font-style: normal;
   font-weight: 500;
   line-height: 140%;
 `;

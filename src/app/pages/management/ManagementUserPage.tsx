@@ -1,8 +1,9 @@
 import React from "react";
-import Navbar from "../../layout/Navbar";
-import TablePage from "../product/TablePage";
 
-export default function ViewProduct() {
+import Navbar from "../../Components/layout/Navbar";
+import TablePage from "../../Components/management/managementList/TablePage";
+
+export default function ProductPage() {
   return (
     <>
       <Navbar />
