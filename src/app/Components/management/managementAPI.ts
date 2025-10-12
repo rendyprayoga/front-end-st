@@ -1,48 +1,47 @@
 import axios, { AxiosResponse } from "axios";
-import { IManagementUser } from "./interface/managementuser.interface";
+import { IManagementUser, IManagementGetUser } from "./interface/managementuser.interface";
 
+const API_BASE_URL = "http://127.0.0.1:8000/api/v1/users";
 
-const API_BASE_URL = "https://dummyjson.com";
-
-export const createProduct = async (product: IManagementUser): Promise<IManagementUser> => {
+// --- CREATE PRODUCT ---
+export const createUsers = async (product: IManagementUser): Promise<IManagementUser> => {
   const response: AxiosResponse<IManagementUser> = await axios.post(
-    `${API_BASE_URL}/products/add`,
+    `${API_BASE_URL}`,
     product
   );
   return response.data;
 };
 
-// --- READ ALL ---
-export const getProducts = async ({ params }: any): Promise<IManagementUser[]> => {
-  const queryString = new URLSearchParams(params).toString();
-  const response: AxiosResponse<IManagementUser[]> = await axios.get(
-    `${API_BASE_URL}/products?${queryString}`
-  );
 
+export const getUsers = async (params?: IManagementGetUser): Promise<IManagementUser[]> => {
+  const response: AxiosResponse<IManagementUser[]> = await axios.get(
+    `${API_BASE_URL}`,
+    { params } 
+  );
   return response.data;
 };
 
 // --- READ BY ID ---
-export const getProductById = async (id: string): Promise<IManagementUser> => {
+export const getUsersById = async (id: string): Promise<IManagementUser> => {
   const response: AxiosResponse<IManagementUser> = await axios.get(
-    `${API_BASE_URL}/products/${id}`
+    `${API_BASE_URL}/${id}`
   );
   return response.data;
 };
 
-// --- UPDATE ---
-export const updateProduct = async (
-  id: number,
+// --- UPDATE PRODUCT ---
+export const updateUsers = async (
+  id: string,
   product: IManagementUser
 ): Promise<IManagementUser> => {
   const response: AxiosResponse<IManagementUser> = await axios.put(
-    `${API_BASE_URL}/products/${id}`,
+    `${API_BASE_URL}/${id}`,
     product
   );
   return response.data;
 };
 
-// --- DELETE ---
-export const deleteProduct = async (id: string): Promise<void> => {
-  await axios.delete(`${API_BASE_URL}/products/${id}`);
+// --- DELETE PRODUCT ---
+export const deleteUsers = async (id: string): Promise<void> => {
+  await axios.delete(`${API_BASE_URL}/${id}`);
 };

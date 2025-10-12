@@ -3,6 +3,7 @@ import LoginPage from "./app/feature/auth/LoginPage";
 import ProductsDetails from "./app/Components/admin/product/product/ProductsDetails";
 import { PrivateRoute } from "./app/routes/PrivateRoutes";
 import ViewProduct from "./app/Components/user/view/ViewProduct";
+import ManagementUserPage from "./app/pages/management/ManagementUserPage";
 
 function App() {
   return (
@@ -16,6 +17,15 @@ function App() {
           element={
             <PrivateRoute allowedRoles={["admin"]}>
               <ProductsDetails />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/management-users"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <ManagementUserPage />
             </PrivateRoute>
           }
         />

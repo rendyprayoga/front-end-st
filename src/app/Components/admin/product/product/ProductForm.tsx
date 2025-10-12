@@ -1,23 +1,25 @@
 import React, { useEffect } from "react";
-
 import { useForm } from "react-hook-form";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { IProduct } from "../interface/products.interface";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import styled from "styled-components";
-import { DFlexJustifyEnd } from "../../../../react-table/flex.styled";
 import { createProduct, updateProduct } from "./productsAPI";
 
 interface Props {
   callbackSubmit: (value: any) => void;
   dataSelected?: IProduct;
 }
+
 function ProductsForm({ callbackSubmit, dataSelected }: Props) {
   const validationsSchema = Yup.object().shape({
-    title: Yup.string().required("title name is required"),
-    description: Yup.string().required("title name is required"),
-    price: Yup.number().min(1),
+    name: Yup.string().required("Product name is required"),
+    description: Yup.string().required("Description is required"),
+    category: Yup.string().required("Category is required"),
+    status: Yup.string().required("Status is required"),
+    price: Yup.number().min(1, "Price must be at least 1").required(),
+    stock: Yup.number().min(0, "Stock must be 0 or greater").required(),
   });
 
   const {
@@ -27,22 +29,30 @@ function ProductsForm({ callbackSubmit, dataSelected }: Props) {
     formState: { errors },
   } = useForm<IProduct>({
     resolver: yupResolver(validationsSchema) as any,
-    defaultValues: { title: "", description: "", price: 10 },
+    defaultValues: {
+      name: "",
+      description: "",
+      category: "",
+      status: "active",
+      price: 0,
+      stock: 0,
+    },
   });
 
+  // ✅ Update Mode: Reset form with selected data
   useEffect(() => {
     if (dataSelected) reset(dataSelected);
   }, [dataSelected]);
 
-  const handleSubmitform = (valueForm: IProduct) => {
+  const handleSubmitForm = (valueForm: IProduct) => {
     console.log(valueForm);
-    addProduct(valueForm);
+    saveProduct(valueForm);
   };
 
-  const addProduct = async (product: IProduct) => {
+  const saveProduct = async (product: IProduct) => {
     try {
       const request = product?.id
-        ? await updateProduct(Number(product?.id), product)
+        ? await updateProduct(product.id, product)
         : await createProduct(product);
       callbackSubmit(request);
     } catch (error) {
@@ -51,90 +61,147 @@ function ProductsForm({ callbackSubmit, dataSelected }: Props) {
   };
 
   return (
-    <>
-      <Form onSubmit={handleSubmit(handleSubmitform)}>
-        <Form.Group className="mb-3">
-          <Form.Label className="font-size-14">Title</Form.Label>
-          <Form.Control
-            {...register("title")}
-            isInvalid={Boolean(errors?.title)}
-            className="border-radius-5 p-6 height-40px"
-            placeholder="Enter Title"
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors?.title?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label className="font-size-14">Description</Form.Label>
-          <Form.Control
-            {...register("description")}
-            isInvalid={Boolean(errors?.description)}
-            className="border-radius-5 p-6 height-40px"
-            placeholder="Enter Description"
-            as={"textarea"}
-            rows={4}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors?.description?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label className="font-size-14">Price</Form.Label>
-          <Form.Control
-            {...register("price")}
-            type="number"
-            isInvalid={Boolean(errors?.price)}
-            className="border-radius-5 p-6 height-40px"
-            placeholder="Enter Pice"
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors?.price?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Button type="submit">
-          {dataSelected?.id ? "Update" : "Add New "} Product
-        </Button>
-      </Form>
-    </>
+    <Form onSubmit={handleSubmit(handleSubmitForm)}>
+      {/* Name */}
+      <Form.Group className="mb-3">
+        <Form.Label className="font-size-14">Product Name</Form.Label>
+        <Form.Control
+          {...register("name")}
+          isInvalid={Boolean(errors?.name)}
+          className="border-radius-5 p-6 height-40px"
+          placeholder="Enter Product Name"
+        />
+        <Form.Control.Feedback type="invalid">
+          {errors?.name?.message}
+        </Form.Control.Feedback>
+      </Form.Group>
+
+      {/* Description */}
+      <Form.Group className="mb-3">
+        <Form.Label className="font-size-14">Description</Form.Label>
+        <Form.Control
+          {...register("description")}
+          isInvalid={Boolean(errors?.description)}
+          className="border-radius-5 p-6"
+          placeholder="Enter Description"
+          as="textarea"
+          rows={4}
+        />
+        <Form.Control.Feedback type="invalid">
+          {errors?.description?.message}
+        </Form.Control.Feedback>
+      </Form.Group>
+
+      {/* Category & Status (Rapi - Sejajar) */}
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label className="font-size-14">Category</Form.Label>
+            <Form.Control
+              {...register("category")}
+              isInvalid={Boolean(errors?.category)}
+              className="border-radius-5 p-6 height-40px"
+              placeholder="Enter Category"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors?.category?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Col>
+
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label className="font-size-14">Status</Form.Label>
+            <Form.Select
+              {...register("status")}
+              isInvalid={Boolean(errors?.status)}
+              className="border-radius-5 p-6 height-40px"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </Form.Select>
+            <Form.Control.Feedback type="invalid">
+              {errors?.status?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Col>
+      </Row>
+
+      {/* Price & Stock (Rapi) */}
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label className="font-size-14">Price</Form.Label>
+            <Form.Control
+              {...register("price")}
+              type="number"
+              isInvalid={Boolean(errors?.price)}
+              className="border-radius-5 p-6 height-40px"
+              placeholder="Enter Price"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors?.price?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Col>
+
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label className="font-size-14">Stock</Form.Label>
+            <Form.Control
+              {...register("stock")}
+              type="number"
+              isInvalid={Boolean(errors?.stock)}
+              className="border-radius-5 p-6 height-40px"
+              placeholder="Enter Stock"
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors?.stock?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Col>
+      </Row>
+
+      {/* Submit */}
+      <Button type="submit">
+        {dataSelected?.id ? "Update" : "Add New"} Product
+      </Button>
+    </Form>
   );
 }
 
 export default ProductsForm;
 
+/* Styled Buttons (tidak diubah) */
 const StyledButton = styled(Button as any)`
   display: flex;
   height: 40px;
-  padding: var(--Padding-p-0, 0) var(--Padding-p-12, 12px);
+  padding: 0 12px;
   justify-content: center;
   align-items: center;
-  gap: var(--Gap-g-8, 8px);
+  gap: 8px;
   border-radius: 10px;
-
-  background: var(--Border-Secondary, #c0c5cc);
+  background: #c0c5cc;
   font-size: 14px;
-  font-style: normal;
   font-weight: 500;
-  line-height: 140%;
   border: none;
   &:hover {
-    background: var(--Border-Secondary, #c0c5cc);
+    background: #b1b6bd;
   }
 `;
 
 const StyledButtonCancel = styled.button`
   display: flex;
   height: 40px;
-  padding: var(--Padding-p-0, 0) var(--Padding-p-12, 12px);
+  padding: 0 12px;
   justify-content: center;
   align-items: center;
-  gap: var(--Gap-g-8, 8px);
+  gap: 8px;
   color: var(--black);
   border-radius: 10px;
-  border: 1px solid var(--Border-Primary, #e7eaf0);
-  background: var(--Background-Primary, #fff);
+  border: 1px solid #e7eaf0;
+  background: #fff;
   font-size: 14px;
-  font-style: normal;
   font-weight: 500;
   line-height: 140%;
 `;
