@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Dropdown, Modal, Table } from "react-bootstrap";
+import { Button, Dropdown, Modal, Table, Image } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { IParamsGetProduct, IProduct } from "../interface/products.interface";
 import ProductsForm from "./ProductForm";
@@ -30,6 +30,7 @@ function ProductsList() {
       price: 0,
       category: "",
       stock: 0,
+      image_url: "",
       status: "",
     });
     setShow(true);
@@ -123,6 +124,34 @@ function ProductsList() {
               <React.Fragment key={product.id}>
                 <tr>
                   <td>{index + 1}</td>
+                  <td>
+                    {product.image_url ? (
+                      <Image
+                        src={`http://127.0.0.1:8000${product.image_url}`}
+                        alt="Profile"
+                        width={40}
+                        height={40}
+                        roundedCircle
+                        className="border"
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: "50%",
+                          backgroundColor: "#e9ecef",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#6c757d",
+                          fontSize: "12px",
+                        }}
+                      >
+                        No Image
+                      </div>
+                    )}
+                  </td>
                   <td>{product.name}</td>
                   <td>{product.category}</td>
                   <td>{product.stock}</td>

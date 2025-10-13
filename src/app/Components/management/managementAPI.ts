@@ -3,6 +3,7 @@ import { IManagementUser, IManagementGetUser } from "./interface/managementuser.
 
 const API_BASE_URL = "http://127.0.0.1:8000/api/v1/users";
 
+
 // --- CREATE PRODUCT ---
 export const createUsers = async (product: IManagementUser): Promise<IManagementUser> => {
   const response: AxiosResponse<IManagementUser> = await axios.post(
@@ -44,4 +45,19 @@ export const updateUsers = async (
 // --- DELETE PRODUCT ---
 export const deleteUsers = async (id: string): Promise<void> => {
   await axios.delete(`${API_BASE_URL}/${id}`);
+};
+export const uploadImage = async (file: File): Promise<{ image_url: string }> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await axios.post(
+    `${API_BASE_URL}/upload/image`,  
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  return response.data;
 };

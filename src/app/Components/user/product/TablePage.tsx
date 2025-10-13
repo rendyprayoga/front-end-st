@@ -7,6 +7,7 @@ import {
   Card,
   Row,
   Col,
+  Image,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { IParamsGetProduct, IProduct } from "../interface/products.interface";
@@ -74,7 +75,10 @@ function ProductsList() {
           {products.map((product, index: number) => (
             <Col md={3} key={product.id}>
               <StyledCard className="w-100">
-                <StyledCardImg variant="top" src="/default_image.png" />
+                <StyledCardImg
+                  variant="top"
+                  src={`http://127.0.0.1:8000${product.image_url}`}
+                />
                 <StyledCardBody>
                   <TitleBasic>{product.name}</TitleBasic>
 
