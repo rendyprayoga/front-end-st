@@ -9,9 +9,9 @@ import IconSignIn from "../icon/SignInLogo/IconSignIn";
 export default function HeaderBullion() {
   const storedUser = localStorage.getItem("user");
 
-  const user: { full_name: string; role: string } = storedUser
+  const user = storedUser
     ? JSON.parse(storedUser)
-    : { full_name: "", role: "" };
+    : { full_name: "", role: "", profile_picture: "" };
 
   const role = user.role || "guest";
   const full_name = user.full_name || "User";
@@ -27,7 +27,14 @@ export default function HeaderBullion() {
           <DFlex>
             <CaretDown size={16} />
             <TitleBasic>{full_name}</TitleBasic>
-            <UserCircle size={24} weight="regular" />
+            {user.profile_picture ? (
+              <ProfileImage
+                src={`http://localhost:8000${user.profile_picture}`}
+                alt="Profile"
+              />
+            ) : (
+              <UserCircle size={24} weight="regular" />
+            )}
           </DFlex>
         }
         id="basic-nav-dropdown"
@@ -98,4 +105,11 @@ const TitleBasic = styled.div`
   font-size: 14px;
   font-weight: 500;
   line-height: 140%;
+`;
+
+const ProfileImage = styled.img`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
 `;

@@ -6,6 +6,7 @@ export interface IProduct {
   category: string;
   stock: number;
   status: string;
+  image_url?: string;
   created_at?: string;
   updated_at?: string;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Dropdown, Modal, Table } from "react-bootstrap";
+import { Button, Dropdown, Modal, Table, Image } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { DotsThree } from "phosphor-react";
@@ -31,7 +31,8 @@ function ManagementList() {
       email: "",
       full_name: "",
       role: "",
-      is_active: "true",
+      is_active: true,
+      phone: "",
     });
     setShow(true);
   };
@@ -109,8 +110,10 @@ function ManagementList() {
           <thead>
             <tr>
               <th>No</th>
+              <th>Profile</th>
               <th>Nama User</th>
               <th>Full Name</th>
+              <th>phone</th>
               <th>Role</th>
               <th>Status</th>
               <th>Created At</th>
@@ -122,10 +125,39 @@ function ManagementList() {
               <React.Fragment key={user.id}>
                 <tr>
                   <td>{index + 1}</td>
+                  <td>
+                    {user.profile_picture ? (
+                      <Image
+                        src={`http://127.0.0.1:8000${user.profile_picture}`}
+                        alt="Profile"
+                        width={40}
+                        height={40}
+                        roundedCircle
+                        className="border"
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: "50%",
+                          backgroundColor: "#e9ecef",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#6c757d",
+                          fontSize: "12px",
+                        }}
+                      >
+                        No Image
+                      </div>
+                    )}
+                  </td>
                   <td>{user.email}</td>
                   <td>{user.full_name}</td>
+                  <td>{user.phone}</td>
                   <td>{user.role}</td>
-                  <td>{user.is_active === "true" ? "Active" : "Inactive"}</td>
+                  <td>{user.is_active ? "Active" : "Inactive"}</td>
                   <td>
                     {user.created_at
                       ? new Date(user.created_at).toLocaleDateString()

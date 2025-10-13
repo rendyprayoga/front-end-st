@@ -3,7 +3,9 @@ export interface IManagementUser{
   email: string;
   full_name: string;
   role: string;
-  is_active: string;
+  is_active: boolean;
+  profile_picture?: string;  
+  phone?: string; 
   created_at?: string;
   updated_at?: string;
 }
