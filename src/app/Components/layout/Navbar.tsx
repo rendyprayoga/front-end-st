@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Navbar, NavDropdown } from "react-bootstrap";
 import { UserCircle, CaretDown } from "phosphor-react";
@@ -7,6 +7,7 @@ import { DFlex } from "../../react-table/flex.styled";
 import IconSignIn from "../icon/SignInLogo/IconSignIn";
 
 export default function HeaderBullion() {
+  const navigate = useNavigate();
   const storedUser = localStorage.getItem("user");
 
   const user = storedUser
@@ -16,6 +17,11 @@ export default function HeaderBullion() {
   const role = user.role || "guest";
   const full_name = user.full_name || "User";
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
   return (
     <StyledNavbar expand="lg">
       <Navbar.Brand as={NavLink} to="/">
@@ -63,14 +69,7 @@ export default function HeaderBullion() {
 
         <NavDropdown.Item>Profile</NavDropdown.Item>
         <NavDropdown.Divider />
-        <NavDropdown.Item
-          onClick={() => {
-            localStorage.clear();
-            window.location.href = "/";
-          }}
-        >
-          Log Out
-        </NavDropdown.Item>
+        <NavDropdown.Item onClick={handleLogout}>Log Out</NavDropdown.Item>
       </StyledDropdown>
     </StyledNavbar>
   );

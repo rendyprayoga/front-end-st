@@ -10,20 +10,17 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({
   children,
   allowedRoles,
 }) => {
+  const token = localStorage.getItem("token");
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
 
-  // Jika tidak ada user (belum login)
-  if (!user) {
+  if (!token || !user) {
     return <Navigate to="/" replace />;
   }
 
-  // Jika role user tidak diizinkan
   if (!allowedRoles.includes(user.role)) {
-    // Kalau bukan admin → lempar ke halaman user
     return <Navigate to="/view-product" replace />;
   }
 
-  // Jika role cocok
   return <>{children}</>;
 };

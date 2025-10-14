@@ -12,6 +12,7 @@ import { createUsers, updateUsers } from "../managementAPI";
 interface Props {
   callbackSubmit: (value: any) => void;
   dataSelected?: IManagementUser;
+  isEdit?: boolean;
 }
 
 interface IManagementUserForm extends IManagementUser {
@@ -24,6 +25,9 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
 
+  // Tentukan apakah ini mode edit
+  const isEditMode = !!dataSelected?.id;
+
   const validationsSchema = Yup.object().shape({
     email: Yup.string()
       .email("Email must be valid")
@@ -35,32 +39,36 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
       .min(8, "Phone number must be at least 8 characters")
       .max(15, "Phone number too long"),
     is_active: Yup.boolean().required("Status is required"),
-    password: Yup.string()
-      .min(6, "Password must be at least 6 characters")
-      .test(
-        "password-required",
-        "Password is required for new users",
-        function (value) {
-          // Password required hanya untuk user baru (tidak ada dataSelected)
-          if (!dataSelected && !value) {
-            return false;
-          }
+    password: Yup.string().test(
+      "password-conditional",
+      "Password must be at least 6 characters",
+      function (value) {
+        if (isEditMode && value && value !== "") {
+          return value.length >= 6;
+        }
+        if (!isEditMode) {
+          return !!(value && value.trim() && value.length >= 6);
+        }
+        return true;
+      }
+    ),
+    confirmPassword: Yup.string().test(
+      "confirmPassword-conditional",
+      "Passwords must match",
+      function (value) {
+        const { password } = this.parent;
+
+        if (password && password !== "") {
+          return value === password;
+        }
+
+        if (isEditMode && (!password || password === "")) {
           return true;
         }
-      ),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password")], "Passwords must match")
-      .test(
-        "confirmPassword-required",
-        "Confirm Password is required for new users",
-        function (value) {
-          // Confirm Password required hanya untuk user baru (tidak ada dataSelected)
-          if (!dataSelected && !value) {
-            return false;
-          }
-          return true;
-        }
-      ),
+
+        return true;
+      }
+    ),
   });
 
   const {
@@ -85,10 +93,16 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
   });
 
   const profilePicture = watch("profile_picture");
+  const passwordValue = watch("password");
 
   useEffect(() => {
     if (dataSelected) {
-      reset(dataSelected);
+      const resetData = {
+        ...dataSelected,
+        password: "",
+        confirmPassword: "",
+      };
+      reset(resetData);
       if (dataSelected.profile_picture) {
         setImagePreview(`http://localhost:8000${dataSelected.profile_picture}`);
       }
@@ -163,7 +177,7 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
       const { confirmPassword, ...userData } = valueForm;
 
       // Jika edit user dan password kosong, hapus field password
-      if (dataSelected && (!userData.password || userData.password === "")) {
+      if (isEditMode && (!userData.password || userData.password === "")) {
         delete userData.password;
       }
 
@@ -195,6 +209,7 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
       console.log(error);
     }
   };
+
   const removeProfilePicture = () => {
     setValue("profile_picture", "");
     setImagePreview("");
@@ -207,36 +222,76 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
       <Form.Group className="mb-3">
         <Form.Label className="font-size-14">Profile Picture</Form.Label>
 
-        {imagePreview && (
-          <div className="mb-3">
-            <Image
-              src={imagePreview}
-              alt="Profile preview"
-              width={100}
-              height={100}
-              roundedCircle
-              className="border"
-            />
-            <div className="mt-2">
-              <Button
-                variant="outline-danger"
-                size="sm"
-                onClick={removeProfilePicture}
-              >
-                Remove Picture
-              </Button>
-            </div>
+        <div className="d-flex flex-column align-items-center">
+          <div
+            style={{
+              width: "150px",
+              height: "150px",
+              background: "#F8F9FA",
+              border: "1px dashed #D0D3D8",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              document.getElementById("uploadProfileInput")?.click()
+            }
+          >
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Profile Preview"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <div className="text-muted d-flex flex-column align-items-center">
+                <i
+                  className="bi bi-person-circle"
+                  style={{ fontSize: "48px" }}
+                ></i>
+                <small>Pilih Foto</small>
+              </div>
+            )}
           </div>
-        )}
 
-        <Form.Control
-          type="file"
-          accept=".jpg,.jpeg,.png"
-          onChange={handleFileSelect}
-          disabled={isUploading}
-        />
+          <input
+            id="uploadProfileInput"
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            onChange={handleFileSelect}
+            style={{ display: "none" }}
+            disabled={isUploading}
+          />
+
+          <Button
+            className="mt-3"
+            variant="outline-secondary"
+            onClick={() =>
+              document.getElementById("uploadProfileInput")?.click()
+            }
+            disabled={isUploading}
+          >
+            Unggah Gambar
+          </Button>
+
+          {imagePreview && (
+            <Button
+              variant="outline-danger"
+              size="sm"
+              className="mt-2"
+              onClick={removeProfilePicture}
+              disabled={isUploading}
+            >
+              Hapus Gambar
+            </Button>
+          )}
+        </div>
+
         <Form.Text className="text-muted">
-          Upload JPG, JPEG, or PNG file (max 5MB)
+          Upload JPG, JPEG, atau PNG (max 5MB)
         </Form.Text>
       </Form.Group>
 
@@ -276,13 +331,15 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
         <Col md={6}>
           <Form.Group className="mb-3">
             <Form.Label className="font-size-14">
-              Password {!dataSelected && <span className="text-danger">*</span>}
+              Password {!isEditMode && <span className="text-danger">*</span>}
             </Form.Label>
             <Form.Control
               {...register("password")}
               isInvalid={Boolean(errors?.password)}
               className="border-radius-5 p-6 height-40px"
-              placeholder="Enter Password"
+              placeholder={
+                isEditMode ? "Enter new password (optional)" : "Enter Password"
+              }
               type="password"
               disabled={isUploading}
             />
@@ -290,7 +347,7 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
               {errors?.password?.message}
             </Form.Control.Feedback>
             <Form.Text className="text-muted">
-              {dataSelected
+              {isEditMode
                 ? "Leave blank to keep current password"
                 : "Minimum 6 characters"}
             </Form.Text>
@@ -301,19 +358,28 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
           <Form.Group className="mb-3">
             <Form.Label className="font-size-14">
               Confirm Password{" "}
-              {!dataSelected && <span className="text-danger">*</span>}
+              {!isEditMode && <span className="text-danger">*</span>}
             </Form.Label>
             <Form.Control
               {...register("confirmPassword")}
               isInvalid={Boolean(errors?.confirmPassword)}
               className="border-radius-5 p-6 height-40px"
-              placeholder="Confirm Password"
+              placeholder={
+                isEditMode
+                  ? "Confirm new password (optional)"
+                  : "Confirm Password"
+              }
               type="password"
-              disabled={isUploading}
+              disabled={isUploading || (isEditMode && !passwordValue)}
             />
             <Form.Control.Feedback type="invalid">
               {errors?.confirmPassword?.message}
             </Form.Control.Feedback>
+            {isEditMode && !passwordValue && (
+              <Form.Text className="text-muted">
+                Confirm password is optional when password is empty
+              </Form.Text>
+            )}
           </Form.Group>
         </Col>
       </Row>
@@ -323,13 +389,13 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
         <Col md={6}>
           <Form.Group className="mb-3">
             <Form.Label className="font-size-14">Role</Form.Label>
-
             <Form.Select
               {...register("role")}
               isInvalid={Boolean(errors?.role)}
               className="border-radius-5 p-6 height-40px"
               disabled={isUploading}
             >
+              <option value="">Select Role</option>
               <option value="admin">Admin</option>
               <option value="user">User</option>
             </Form.Select>
@@ -354,6 +420,7 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
             </Form.Control.Feedback>
           </Form.Group>
         </Col>
+
         <Col md={6}>
           <Form.Group className="mb-3">
             <Form.Label className="font-size-14">Status</Form.Label>
@@ -375,8 +442,7 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
 
       {/* Submit */}
       <Button type="submit" disabled={isUploading}>
-        {isUploading ? "Uploading..." : dataSelected?.id ? "Update" : "Add New"}{" "}
-        User
+        {isUploading ? "Uploading..." : isEditMode ? "Update" : "Add New"} User
       </Button>
     </Form>
   );
