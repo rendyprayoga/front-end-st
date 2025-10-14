@@ -5,16 +5,21 @@ import { IParamsGetProduct, IProduct } from "../interface/products.interface";
 import ProductsForm from "./ProductForm";
 import { deleteProduct, getProducts } from "./productsAPI";
 import styled from "styled-components";
-import { DotsThree } from "phosphor-react";
+import { CaretLeft, CaretRight, DotsThree, Eye } from "phosphor-react";
 
 function ProductsList() {
   const navigate = useNavigate();
 
   const [products, setProducts] = useState<IProduct[]>([]);
   const [show, setShow] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [dataSelected, setDataSelected] = useState<IProduct>();
   const triggerGet = useRef<number>(0);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalData, setTotalData] = useState(0);
 
   const [modalDelete, setModalDelete] = useState<any>({
     show: false,
@@ -22,6 +27,7 @@ function ProductsList() {
   });
 
   const handleClose = () => setShow(false);
+  const handleCloseDetail = () => setShowDetail(false);
 
   const handleShow = () => {
     setDataSelected({
@@ -38,8 +44,8 @@ function ProductsList() {
 
   useEffect(() => {
     const params: IParamsGetProduct = {
-      skip: 0,
-      limit: 10,
+      skip: (currentPage - 1) * itemsPerPage,
+      limit: itemsPerPage,
       sortBy: "id",
       order: "asc",
     };
@@ -48,12 +54,13 @@ function ProductsList() {
     return () => {
       console.log("clean");
     };
-  }, [triggerGet, refreshTrigger]);
+  }, [triggerGet, refreshTrigger, currentPage, itemsPerPage]);
 
   const getProductData = async (params: IParamsGetProduct) => {
     try {
       const request: any = await getProducts({ ...params });
-      setProducts(request);
+      setProducts(request.data || request);
+      setTotalData(request.total || request.length || 52);
     } catch (error) {
       console.log(error);
     }
@@ -67,6 +74,11 @@ function ProductsList() {
   const onClickEdit = (item: IProduct) => {
     setDataSelected(item);
     setShow(true);
+  };
+
+  const onClickDetail = (item: IProduct) => {
+    setDataSelected(item);
+    setShowDetail(true);
   };
 
   const handleCloseModalDelete = () => {
@@ -89,6 +101,73 @@ function ProductsList() {
     } catch (error) {}
   };
 
+  const totalPages = Math.ceil(totalData / itemsPerPage);
+
+  const handleItemsPerPageChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const renderPaginationItems = () => {
+    const items = [];
+    const maxVisiblePages = 5;
+
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Previous button
+    items.push(
+      <PaginationItem
+        key="prev"
+        $disabled={currentPage === 1}
+        onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+      >
+        <CaretLeft size={16} />
+      </PaginationItem>
+    );
+
+    // Page numbers
+    for (let page = startPage; page <= endPage; page++) {
+      items.push(
+        <PaginationItem
+          key={page}
+          $active={page === currentPage}
+          onClick={() => handlePageChange(page)}
+        >
+          {page}
+        </PaginationItem>
+      );
+    }
+
+    // Next button
+    items.push(
+      <PaginationItem
+        key="next"
+        $disabled={currentPage === totalPages}
+        onClick={() =>
+          currentPage < totalPages && handlePageChange(currentPage + 1)
+        }
+      >
+        <CaretRight size={16} />
+      </PaginationItem>
+    );
+
+    return items;
+  };
+
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalData);
+
   return (
     <>
       <div>
@@ -101,90 +180,131 @@ function ProductsList() {
           </div>
           <div className="d-flex gap-2">
             <StyledButtonWithout onClick={() => setRefreshTrigger(Date.now())}>
-              Perbarui stock
+              Refresh Data
             </StyledButtonWithout>
             <StyledButton onClick={handleShow}>Tambah Product</StyledButton>
           </div>
         </div>
 
-        <Table>
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Nama Produk</th>
-              <th>Kategori</th>
-              <th>Stok</th>
-              <th>Harga</th>
-              <th>Status</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product, index: number) => (
-              <React.Fragment key={product.id}>
-                <tr>
-                  <td>{index + 1}</td>
-                  <td>
-                    {product.image_url ? (
-                      <Image
-                        src={`http://127.0.0.1:8000${product.image_url}`}
-                        alt="Profile"
-                        width={40}
-                        height={40}
-                        roundedCircle
-                        className="border"
-                      />
-                    ) : (
+        {/* Tabel dengan styling baru */}
+        <StyledTableContainer>
+          <StyledTable>
+            <thead>
+              <tr>
+                <th>Nama Produk</th>
+                <th>Kategori</th>
+                <th>Stok</th>
+                <th>Harga</th>
+                <th>Status</th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((product, index: number) => (
+                <React.Fragment key={product.id}>
+                  <tr>
+                    <td>
+                      <ProductInfoContainer>
+                        {product.image_url ? (
+                          <Image
+                            src={`http://127.0.0.1:8000${product.image_url}`}
+                            alt="Product"
+                            width={40}
+                            height={40}
+                            className="border me-3"
+                            style={{ borderRadius: "8px", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <NoImagePlaceholder className="me-3">
+                            No Image
+                          </NoImagePlaceholder>
+                        )}
+                        <ProductDetails>
+                          <ProductName>{product.name}</ProductName>
+                          <ProductDescription>
+                            {product.description || "No description"}
+                          </ProductDescription>
+                        </ProductDetails>
+                      </ProductInfoContainer>
+                    </td>
+                    <td>{product.category || "-"}</td>
+                    <td>
+                      <StockBadge $lowStock={product.stock < 10}>
+                        {product.stock}
+                      </StockBadge>
+                    </td>
+                    <td>
+                      Rp {new Intl.NumberFormat("id-ID").format(product.price)}
+                    </td>
+                    <td>
+                      <StatusBadge $isActive={product.status === "active"}>
+                        {product.status === "active" ? "Active" : "Inactive"}
+                      </StatusBadge>
+                    </td>
+                    <td>
                       <div
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: "50%",
-                          backgroundColor: "#e9ecef",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#6c757d",
-                          fontSize: "12px",
-                        }}
+                        onClick={() => onClickDetail(product)}
+                        className="d-flex align-items-center cursor-pointer gap-2 text-primary"
+                        style={{ cursor: "pointer" }}
                       >
-                        No Image
+                        <Eye size={16} />
+                        Lihat Detail
                       </div>
-                    )}
-                  </td>
-                  <td>{product.name}</td>
-                  <td>{product.category}</td>
-                  <td>{product.stock}</td>
-                  <td>
-                    Rp {new Intl.NumberFormat("id-ID").format(product.price)}
-                  </td>
-                  <td>{product.status}</td>
-                  <td>
-                    <Dropdown>
-                      <StyledToggle variant="" className="border-0 p-0">
-                        <DotsThree size={22} />
-                      </StyledToggle>
-                      <StyledDropdownMenu>
-                        <Dropdown.Item
-                          onClick={() =>
-                            setModalDelete({ show: true, data: product })
-                          }
-                        >
-                          Delete
-                        </Dropdown.Item>
-                        <Dropdown.Item onClick={() => onClickEdit(product)}>
-                          Edit
-                        </Dropdown.Item>
-                      </StyledDropdownMenu>
-                    </Dropdown>
-                  </td>
-                </tr>
-              </React.Fragment>
-            ))}
-          </tbody>
-        </Table>
+                    </td>
+                    <td>
+                      <Dropdown>
+                        <StyledToggle variant="" className="border-0 p-0">
+                          <DotsThree size={22} />
+                        </StyledToggle>
+                        <StyledDropdownMenu>
+                          <Dropdown.Item
+                            onClick={() => onClickEdit(product)}
+                            className="d-flex align-items-center gap-2"
+                          >
+                            Edit
+                          </Dropdown.Item>
+                          <Dropdown.Divider />
+                          <Dropdown.Item
+                            onClick={() =>
+                              setModalDelete({ show: true, data: product })
+                            }
+                            className="text-danger d-flex align-items-center gap-2"
+                          >
+                            Delete
+                          </Dropdown.Item>
+                        </StyledDropdownMenu>
+                      </Dropdown>
+                    </td>
+                  </tr>
+                </React.Fragment>
+              ))}
+            </tbody>
+          </StyledTable>
+        </StyledTableContainer>
+
+        {/* Footer dengan pagination */}
+        <StyledTableFooter>
+          <div className="footer-left">
+            <span>Menampilkan</span>
+            <PageSelect
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+            </PageSelect>
+            <span>dari {totalData} Data</span>
+          </div>
+
+          <div className="footer-right">
+            <PaginationContainer>{renderPaginationItems()}</PaginationContainer>
+          </div>
+        </StyledTableFooter>
       </div>
 
+      {/* Modal Form Product */}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Form Product</Modal.Title>
@@ -197,6 +317,119 @@ function ProductsList() {
         </Modal.Body>
       </Modal>
 
+      {/* Modal Detail Product */}
+      <Modal show={showDetail} onHide={handleCloseDetail} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Detail Product</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {dataSelected && (
+            <DetailContainer>
+              <DetailSection>
+                <DetailRow>
+                  <DetailLabel>Gambar Produk</DetailLabel>
+                  <DetailValue>
+                    {dataSelected.image_url ? (
+                      <Image
+                        src={`http://127.0.0.1:8000${dataSelected.image_url}`}
+                        alt="Product"
+                        width={120}
+                        height={120}
+                        className="border"
+                        style={{ borderRadius: "8px", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 120,
+                          height: 120,
+                          borderRadius: "8px",
+                          backgroundColor: "#e9ecef",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#6c757d",
+                          fontSize: "14px",
+                        }}
+                      >
+                        No Image
+                      </div>
+                    )}
+                  </DetailValue>
+                </DetailRow>
+
+                <DetailRow>
+                  <DetailLabel>Nama Produk</DetailLabel>
+                  <DetailValue>{dataSelected.name || "-"}</DetailValue>
+                </DetailRow>
+
+                <DetailRow>
+                  <DetailLabel>Deskripsi</DetailLabel>
+                  <DetailValue>{dataSelected.description || "-"}</DetailValue>
+                </DetailRow>
+
+                <DetailRow>
+                  <DetailLabel>Kategori</DetailLabel>
+                  <DetailValue>{dataSelected.category || "-"}</DetailValue>
+                </DetailRow>
+
+                <DetailRow>
+                  <DetailLabel>Stok</DetailLabel>
+                  <DetailValue>
+                    <StockBadge $lowStock={dataSelected.stock < 10}>
+                      {dataSelected.stock}
+                    </StockBadge>
+                    {dataSelected.stock < 10 && (
+                      <span
+                        style={{
+                          color: "#dc3545",
+                          fontSize: "12px",
+                          marginLeft: "8px",
+                        }}
+                      >
+                        (Stok rendah)
+                      </span>
+                    )}
+                  </DetailValue>
+                </DetailRow>
+
+                <DetailRow>
+                  <DetailLabel>Harga</DetailLabel>
+                  <DetailValue>
+                    Rp{" "}
+                    {new Intl.NumberFormat("id-ID").format(dataSelected.price)}
+                  </DetailValue>
+                </DetailRow>
+
+                <DetailRow>
+                  <DetailLabel>Status</DetailLabel>
+                  <DetailValue>
+                    <StatusBadge $isActive={dataSelected.status === "active"}>
+                      {dataSelected.status === "active" ? "Active" : "Inactive"}
+                    </StatusBadge>
+                  </DetailValue>
+                </DetailRow>
+              </DetailSection>
+            </DetailContainer>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDetail}>
+            Tutup
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              handleCloseDetail();
+              onClickEdit(dataSelected!);
+            }}
+          >
+            Edit Product
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal Delete Confirmation */}
       <Modal show={modalDelete?.show} size="sm">
         <Modal.Header>
           <Modal.Title>Delete Product</Modal.Title>
@@ -219,6 +452,203 @@ function ProductsList() {
 
 export default ProductsList;
 
+// Styled Components
+const StyledTableContainer = styled.div`
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e7eaf0;
+  overflow: hidden;
+`;
+
+const StyledTable = styled(Table)`
+  margin: 0;
+
+  thead {
+    background: var(--BG-Secondary, #f5f7fa) !important;
+
+    th {
+      padding: 12px 16px;
+      font-weight: 600;
+      color: #5b5d63;
+      border-bottom: 1px solid #e7eaf0;
+      font-size: 14px;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #e7eaf0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      td {
+        padding: 16px;
+        vertical-align: middle;
+        border: none;
+      }
+    }
+  }
+`;
+
+const ProductInfoContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const ProductDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const ProductName = styled.div`
+  font-weight: 600;
+  color: #1a1d29;
+`;
+
+const ProductDescription = styled.div`
+  font-size: 12px;
+  color: #8b8d97;
+  margin-top: 2px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const StockBadge = styled.span<{ $lowStock: boolean }>`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: ${(props) => (props.$lowStock ? "#fef3f2" : "#e7f7ef")};
+  color: ${(props) => (props.$lowStock ? "#f04438" : "#12b76a")};
+  border: 1px solid ${(props) => (props.$lowStock ? "#fecdca" : "#abefc6")};
+`;
+
+const StatusBadge = styled.span<{ $isActive: boolean }>`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: ${(props) => (props.$isActive ? "#e7f7ef" : "#fef3f2")};
+  color: ${(props) => (props.$isActive ? "#12b76a" : "#f04438")};
+  border: 1px solid ${(props) => (props.$isActive ? "#abefc6" : "#fecdca")};
+`;
+
+const StyledTableFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border: 1px solid #e7eaf0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+
+  .footer-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #5b5d63;
+  }
+
+  .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+`;
+
+const PageSelect = styled.select`
+  padding: 4px 8px;
+  border: 1px solid #e7eaf0;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const PaginationItem = styled.div<{ $active?: boolean; $disabled?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: ${(props) => (props.$active ? "600" : "400")};
+  color: ${(props) => {
+    if (props.$disabled) return "#8b8d97";
+    if (props.$active) return "#ffffff";
+    return "#5b5d63";
+  }};
+  background-color: ${(props) => (props.$active ? "#ff7900" : "transparent")};
+  border: 1px solid ${(props) => (props.$active ? "#ff7900" : "#e7eaf0")};
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+
+  &:hover {
+    background-color: ${(props) => {
+      if (props.$disabled) return "transparent";
+      if (props.$active) return "#ff7900";
+      return "#f8f9fa";
+    }};
+  }
+`;
+
+const NoImagePlaceholder = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 12px;
+`;
+
+// Styled components untuk modal detail
+const DetailContainer = styled.div`
+  padding: 8px 0;
+`;
+
+const DetailSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const DetailRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 0;
+`;
+
+const DetailLabel = styled.div`
+  font-weight: 600;
+  color: #5b5d63;
+  width: 200px;
+  flex-shrink: 0;
+  font-size: 14px;
+`;
+
+const DetailValue = styled.div`
+  flex: 1;
+  color: #1a1d29;
+  font-size: 14px;
+  word-break: break-word;
+`;
+
+// Header Styled Components
 const TitleBasic = styled.div`
   font-size: 14px;
   font-weight: 500;
@@ -236,7 +666,6 @@ const StyledButton = styled(Button as any)`
   background: #ff7900;
   border: none;
   font-size: 0.875rem;
-
   font-weight: 500;
   line-height: 1.25rem;
 
@@ -249,32 +678,30 @@ const StyledButton = styled(Button as any)`
 const StyledButtonWithout = styled(Button as any)`
   height: 40px;
   padding: 0 12px;
-  color:var(--black)
+  color: var(--black);
   border-radius: 10px;
   border: 1px solid var(--Border-Primary, #e7eaf0);
   background: var(--Background-Primary, #fff);
-    font-size: 0.875rem;
-
-font-weight: 500;
-line-height: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
 
   &:hover {
-     background: var(--Background-Primary, #fff);
-       border: 1px solid var(--Border-Primary, #e7eaf0);
-         color:var(--black)
+    background: var(--Background-Primary, #fff);
+    border: 1px solid var(--Border-Primary, #e7eaf0);
+    color: var(--black);
   }
 `;
 
 const StyledTitle = styled(Modal.Title)`
-  font-size: 1.25rem;
-  font-style: normal;
+  font-size: 20px;
   font-weight: 600;
-  line-height: 140%;
 `;
 
 const StyledDropdownMenu = styled(Dropdown.Menu)`
   border-radius: 0.5rem;
   border: 1px solid #e1e2e5;
+  padding: 8px;
 `;
 
 const StyledToggle = styled(Dropdown.Toggle)`

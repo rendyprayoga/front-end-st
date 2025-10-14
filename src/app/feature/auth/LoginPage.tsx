@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -20,6 +20,20 @@ const LoginPage: React.FC = () => {
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (token && storedUser) {
+      const user = JSON.parse(storedUser);
+      if (user.role === "admin") {
+        navigate("/product-details");
+      } else {
+        navigate("/view-product");
+      }
+    }
+  }, [navigate]);
 
   const validationSchema = Yup.object().shape({
     email: Yup.string()
