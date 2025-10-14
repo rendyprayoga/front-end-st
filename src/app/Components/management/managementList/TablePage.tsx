@@ -26,7 +26,6 @@ function ManagementList() {
   const [dataSelected, setDataSelected] = useState<IManagementUser>();
   const triggerGet = useRef<number>(0);
 
-  // State untuk pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalData, setTotalData] = useState(0);
@@ -67,8 +66,8 @@ function ManagementList() {
   const getUserData = async (params: IManagementGetUser) => {
     try {
       const request: any = await getUsers({ ...params });
-      setUsers(request.data || request); // Sesuaikan dengan response API
-      setTotalData(request.total || request.length || 52); // Ganti dengan total data sebenarnya dari API
+      setUsers(request.data || request);
+      setTotalData(request.total || request.length || 52);
     } catch (error) {
       console.log(error);
     }

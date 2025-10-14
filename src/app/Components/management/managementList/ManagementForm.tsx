@@ -43,15 +43,12 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
       "password-conditional",
       "Password must be at least 6 characters",
       function (value) {
-        // Jika mode edit dan password diisi, harus minimal 6 karakter
         if (isEditMode && value && value !== "") {
           return value.length >= 6;
         }
-        // Jika mode tambah, password wajib dan minimal 6 karakter
         if (!isEditMode) {
           return !!(value && value.trim() && value.length >= 6);
         }
-        // Jika mode edit dan password kosong, tidak masalah
         return true;
       }
     ),
@@ -61,17 +58,14 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
       function (value) {
         const { password } = this.parent;
 
-        // Jika password diisi (baik edit atau tambah), maka confirmPassword harus match
         if (password && password !== "") {
           return value === password;
         }
 
-        // Jika password kosong di mode edit, tidak perlu validasi confirmPassword
         if (isEditMode && (!password || password === "")) {
           return true;
         }
 
-        // Jika mode tambah dan password kosong, error akan ditangani oleh validasi password
         return true;
       }
     ),
@@ -105,8 +99,8 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
     if (dataSelected) {
       const resetData = {
         ...dataSelected,
-        password: "", // Selalu reset password ke kosong saat edit
-        confirmPassword: "", // Reset confirm password juga
+        password: "",
+        confirmPassword: "",
       };
       reset(resetData);
       if (dataSelected.profile_picture) {
@@ -228,36 +222,76 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
       <Form.Group className="mb-3">
         <Form.Label className="font-size-14">Profile Picture</Form.Label>
 
-        {imagePreview && (
-          <div className="mb-3">
-            <Image
-              src={imagePreview}
-              alt="Profile preview"
-              width={100}
-              height={100}
-              roundedCircle
-              className="border"
-            />
-            <div className="mt-2">
-              <Button
-                variant="outline-danger"
-                size="sm"
-                onClick={removeProfilePicture}
-              >
-                Remove Picture
-              </Button>
-            </div>
+        <div className="d-flex flex-column align-items-center">
+          <div
+            style={{
+              width: "150px",
+              height: "150px",
+              background: "#F8F9FA",
+              border: "1px dashed #D0D3D8",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              document.getElementById("uploadProfileInput")?.click()
+            }
+          >
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Profile Preview"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <div className="text-muted d-flex flex-column align-items-center">
+                <i
+                  className="bi bi-person-circle"
+                  style={{ fontSize: "48px" }}
+                ></i>
+                <small>Pilih Foto</small>
+              </div>
+            )}
           </div>
-        )}
 
-        <Form.Control
-          type="file"
-          accept=".jpg,.jpeg,.png"
-          onChange={handleFileSelect}
-          disabled={isUploading}
-        />
+          <input
+            id="uploadProfileInput"
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            onChange={handleFileSelect}
+            style={{ display: "none" }}
+            disabled={isUploading}
+          />
+
+          <Button
+            className="mt-3"
+            variant="outline-secondary"
+            onClick={() =>
+              document.getElementById("uploadProfileInput")?.click()
+            }
+            disabled={isUploading}
+          >
+            Unggah Gambar
+          </Button>
+
+          {imagePreview && (
+            <Button
+              variant="outline-danger"
+              size="sm"
+              className="mt-2"
+              onClick={removeProfilePicture}
+              disabled={isUploading}
+            >
+              Hapus Gambar
+            </Button>
+          )}
+        </div>
+
         <Form.Text className="text-muted">
-          Upload JPG, JPEG, or PNG file (max 5MB)
+          Upload JPG, JPEG, atau PNG (max 5MB)
         </Form.Text>
       </Form.Group>
 

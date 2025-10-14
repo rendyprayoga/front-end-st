@@ -168,6 +168,10 @@ function ProductsList() {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalData);
 
+  const handleCancelForm = () => {
+    setShow(false);
+  };
+
   return (
     <>
       <div>
@@ -222,18 +226,11 @@ function ProductsList() {
                         )}
                         <ProductDetails>
                           <ProductName>{product.name}</ProductName>
-                          <ProductDescription>
-                            {product.description || "No description"}
-                          </ProductDescription>
                         </ProductDetails>
                       </ProductInfoContainer>
                     </td>
                     <td>{product.category || "-"}</td>
-                    <td>
-                      <StockBadge $lowStock={product.stock < 10}>
-                        {product.stock}
-                      </StockBadge>
-                    </td>
+                    <td>{product.stock}</td>
                     <td>
                       Rp {new Intl.NumberFormat("id-ID").format(product.price)}
                     </td>
@@ -248,7 +245,6 @@ function ProductsList() {
                         className="d-flex align-items-center cursor-pointer gap-2 text-primary"
                         style={{ cursor: "pointer" }}
                       >
-                        <Eye size={16} />
                         Lihat Detail
                       </div>
                     </td>
@@ -305,17 +301,23 @@ function ProductsList() {
       </div>
 
       {/* Modal Form Product */}
-      <Modal show={show} onHide={handleClose}>
+      <StyledModal show={show} onHide={handleClose} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Form Product</Modal.Title>
+          <div className="d-flex flex-column">
+            <TitleModal>Form Product</TitleModal>
+            <ProductDescription>
+              Masukkan detail produk untuk menambahkannya ke inventaris.
+            </ProductDescription>
+          </div>
         </Modal.Header>
         <Modal.Body>
           <ProductsForm
             callbackSubmit={callbackSubmit}
+            onCancel={handleCancelForm}
             dataSelected={dataSelected}
           />
         </Modal.Body>
-      </Modal>
+      </StyledModal>
 
       {/* Modal Detail Product */}
       <Modal show={showDetail} onHide={handleCloseDetail} size="lg">
@@ -452,6 +454,14 @@ function ProductsList() {
 
 export default ProductsList;
 
+const TitleModal = styled.div`
+  color: var(--Font-Primary, #020c1f);
+
+  font-size: 1.33333rem;
+
+  font-weight: 600;
+  line-height: 1.86667rem;
+`;
 // Styled Components
 const StyledTableContainer = styled.div`
   background: white;
@@ -468,10 +478,12 @@ const StyledTable = styled(Table)`
 
     th {
       padding: 12px 16px;
-      font-weight: 600;
-      color: #5b5d63;
+      font-weight: 500;
+      color: var(--Font-Primary, #050506);
       border-bottom: 1px solid #e7eaf0;
-      font-size: 14px;
+      font-size: 0.93333rem;
+
+      line-height: 1.33333rem;
     }
   }
 
@@ -485,7 +497,10 @@ const StyledTable = styled(Table)`
 
       td {
         padding: 16px;
-        vertical-align: middle;
+        font-size: 0.93333rem;
+        font-weight: 400;
+        line-height: 1.33333rem;
+        // vertical-align: middle;
         border: none;
       }
     }
@@ -503,17 +518,17 @@ const ProductDetails = styled.div`
 `;
 
 const ProductName = styled.div`
-  font-weight: 600;
-  color: #1a1d29;
+  font-weight: 400;
+  color: var(--Font-Primary, #050506);
+
+  font-size: 0.93333rem;
+
+  line-height: 1.33333rem;
 `;
 
 const ProductDescription = styled.div`
   font-size: 12px;
   color: #8b8d97;
-  margin-top: 2px;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 `;
 
@@ -710,5 +725,22 @@ const StyledToggle = styled(Dropdown.Toggle)`
   padding: 0;
   &::after {
     display: none !important;
+  }
+`;
+
+const StyledModal = styled(Modal)`
+  .modal-content {
+    border-radius: 16px;
+    padding: 1.33333rem;
+  }
+
+  .modal-header {
+    border-bottom: none;
+    padding-bottom: 0.5rem;
+  }
+
+  .modal-title {
+    font-size: 18px;
+    font-weight: 600;
   }
 `;
