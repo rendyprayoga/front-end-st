@@ -322,9 +322,14 @@ function ManagementList() {
       </div>
 
       {/* Modal Form User */}
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Form User</Modal.Title>
+          <div className="d-flex flex-column g-1">
+            <TitleModal>Tambah User</TitleModal>
+            <Description>
+              Masukkan detail user untuk menambahkannya ke management user
+            </Description>
+          </div>
         </Modal.Header>
         <Modal.Body>
           <ManagementForm
@@ -481,9 +486,13 @@ function ManagementList() {
 
 export default ManagementList;
 
-const TitleBasic = styled.div`
-  font-size: 14px;
-  font-weight: 500;
+const TitleModal = styled.div`
+  color: var(--Font-Primary, #020c1f);
+
+  font-size: 1.33333rem;
+
+  font-weight: 600;
+  line-height: 1.86667rem;
 `;
 
 const Description = styled.div`

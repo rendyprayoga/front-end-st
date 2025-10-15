@@ -7,7 +7,12 @@ import { Button, Col, Form, Row, Image, Card } from "react-bootstrap";
 import styled from "styled-components";
 import { createProduct, updateProduct } from "./productsAPI";
 import { FlexRow } from "../../../../react-table/flex.styled";
-import { UploadSimple } from "phosphor-react";
+import {
+  ArrowsClockwise,
+  PencilSimpleLine,
+  Trash,
+  UploadSimple,
+} from "phosphor-react";
 
 interface Props {
   callbackSubmit: (value: any) => void;
@@ -205,20 +210,29 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
 
               <StyledButtonUpload
                 className="mt-3 w-100 gap-2"
+                type="button"
                 onClick={() => document.getElementById("uploadInput")?.click()}
                 disabled={isUploading}
               >
-                <UploadSimple size={18} /> Unggah Gambar
+                {imagePreview ? (
+                  <>
+                    <ArrowsClockwise size={18} /> Ganti Gambar
+                  </>
+                ) : (
+                  <>
+                    <UploadSimple size={18} /> Unggah Gambar
+                  </>
+                )}
               </StyledButtonUpload>
 
               {imagePreview && (
-                <StyledButtonUpload
+                <StyledButtonDelete
                   className="mt-2"
                   onClick={removeProductImage}
                   disabled={isUploading}
                 >
-                  Hapus Gambar
-                </StyledButtonUpload>
+                  <Trash size={18} /> Hapus Gambar
+                </StyledButtonDelete>
               )}
             </div>
           </Form.Group>
@@ -392,11 +406,19 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
           Cancel
         </StyledButtonCancel>
         <StyledButton type="submit" disabled={isUploading}>
-          {isUploading
-            ? "Uploading..."
-            : dataSelected?.id
-            ? "Update"
-            : "Tambah"}
+          {isUploading ? (
+            "Uploading..."
+          ) : dataSelected?.id ? (
+            <>
+              <PencilSimpleLine size={20} weight="fill" />
+              Edit Produk
+            </>
+          ) : (
+            <>
+              <PencilSimpleLine size={20} weight="fill" />
+              Tambah
+            </>
+          )}
         </StyledButton>
       </div>
     </StyledForm>
@@ -420,6 +442,27 @@ const StyledButtonUpload = styled.button`
   border-radius: 8px;
   background: #fff;
   border: 1px solid #d0d3d8;
+
+  cursor: pointer;
+`;
+
+const StyledButtonDelete = styled.button`
+  color: var(--State-Danger-Base, #eb2f2f);
+
+  height: 40px;
+  font-size: 0.93333rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.33333rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+  border-radius: 8px;
+  background: #fff;
+  border: none;
 
   cursor: pointer;
 `;
@@ -474,8 +517,8 @@ const StyledButton = styled.button`
   font-weight: 500;
   line-height: 1;
   border-radius: 8px;
-  background: var(--Border-Secondary, #c0c5cc);
-  border: 1px solid #d0d3d8;
+  background: #ff7900;
+  border: none;
   color: white;
   cursor: pointer;
 `;
