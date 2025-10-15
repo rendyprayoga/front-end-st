@@ -301,26 +301,26 @@ function ProductsList() {
       </div>
 
       {/* Modal Form Product */}
-      <StyledModal show={show} onHide={handleClose} size="lg">
+      <StyledModal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header closeButton>
           <div className="d-flex flex-column">
-            <TitleModal>Form Product</TitleModal>
+            <TitleModal>Tambah Product</TitleModal>
             <ProductDescription>
               Masukkan detail produk untuk menambahkannya ke inventaris.
             </ProductDescription>
           </div>
         </Modal.Header>
-        <Modal.Body>
+        <div className="p-4">
           <ProductsForm
             callbackSubmit={callbackSubmit}
             onCancel={handleCancelForm}
             dataSelected={dataSelected}
           />
-        </Modal.Body>
+        </div>
       </StyledModal>
 
       {/* Modal Detail Product */}
-      <Modal show={showDetail} onHide={handleCloseDetail} size="lg">
+      <Modal show={showDetail} onHide={handleCloseDetail} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detail Product</Modal.Title>
         </Modal.Header>
@@ -731,7 +731,7 @@ const StyledToggle = styled(Dropdown.Toggle)`
 const StyledModal = styled(Modal)`
   .modal-content {
     border-radius: 16px;
-    padding: 1.33333rem;
+    padding: 1rem;
   }
 
   .modal-header {
@@ -740,7 +740,7 @@ const StyledModal = styled(Modal)`
   }
 
   .modal-title {
-    font-size: 18px;
+    font-size: 1.33333rem;
     font-weight: 600;
   }
 `;

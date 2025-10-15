@@ -330,6 +330,7 @@ function ManagementList() {
           <ManagementForm
             callbackSubmit={callbackSubmit}
             dataSelected={dataSelected}
+            onCancel={() => setShow(false)}
           />
         </Modal.Body>
       </Modal>

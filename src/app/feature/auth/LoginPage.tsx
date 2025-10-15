@@ -80,87 +80,96 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "414px",
-        margin: "100px auto",
-        padding: "2rem",
-        borderRadius: "24px",
-        border: "1px solid var(--Border-Primary, #E6E9F0)",
-        background: "var(--BG-Primary, #FFF)",
-      }}
-    >
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <div className="mb-3">
-          <IconSignIn />
-        </div>
-        <Description className="mb-3">
-          Enter your username and password correctly
-        </Description>
+    <WrapperContent>
+      <div
+        style={{
+          maxWidth: "414px",
+          margin: "100px auto",
+          padding: "2rem",
+          borderRadius: "24px",
+          border: "1px solid var(--Border-Primary, #E6E9F0)",
+          background: "var(--BG-Primary, #FFF)",
+        }}
+      >
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <div className="mb-3">
+            <IconSignIn />
+          </div>
+          <Description className="mb-3">
+            Enter your username and password correctly
+          </Description>
 
-        {error && <Alert variant="danger">{error}</Alert>}
+          {error && <Alert variant="danger">{error}</Alert>}
 
-        <Form.Group className="mb-3">
-          <StyledLabel>Username</StyledLabel>
-          <StyledControl
-            type="email"
-            placeholder="Enter username"
-            {...register("email")}
-            isInvalid={!!errors.email}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.email?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group className="mb-3">
-          <StyledLabel>Password</StyledLabel>
-          <PasswordWrapper>
+          <Form.Group className="mb-3">
+            <StyledLabel>Username</StyledLabel>
             <StyledControl
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter password"
-              {...register("password")}
-              isInvalid={!!errors.password}
+              type="email"
+              placeholder="Enter username"
+              {...register("email")}
+              isInvalid={!!errors.email}
             />
-            <EyeButton
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label="Toggle password visibility"
-            >
-              {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
-            </EyeButton>
-          </PasswordWrapper>
-          <Form.Control.Feedback type="invalid">
-            {errors.password?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
+            <Form.Control.Feedback type="invalid">
+              {errors.email?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
 
-        <Button
-          style={{
-            borderRadius: "8px",
-            background: "var(--Primary-Base, #FF7900)",
-            border: "none",
-            fontSize: "14px",
-            fontWeight: "500",
-          }}
-          type="submit"
-          className="w-100"
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <Spinner size="sm" animation="border" /> Loading...
-            </>
-          ) : (
-            "Sign In"
-          )}
-        </Button>
-      </Form>
-    </div>
+          <Form.Group className="mb-3">
+            <StyledLabel>Password</StyledLabel>
+            <PasswordWrapper>
+              <StyledControl
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter password"
+                {...register("password")}
+                isInvalid={!!errors.password}
+              />
+              <EyeButton
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
+              </EyeButton>
+            </PasswordWrapper>
+            <Form.Control.Feedback type="invalid">
+              {errors.password?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Button
+            style={{
+              borderRadius: "8px",
+              background: "var(--Primary-Base, #FF7900)",
+              border: "none",
+              fontSize: "14px",
+              fontWeight: "500",
+            }}
+            type="submit"
+            className="w-100"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Spinner size="sm" animation="border" /> Loading...
+              </>
+            ) : (
+              "Sign In"
+            )}
+          </Button>
+        </Form>
+      </div>
+    </WrapperContent>
   );
 };
 
 export default LoginPage;
+
+const WrapperContent = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+`;
 
 const Description = styled.div`
   color: var(--Font-Secondary, #5b5d63);

@@ -3,10 +3,11 @@ import { useForm } from "react-hook-form";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { IProduct } from "../interface/products.interface";
-import { Button, Col, Form, Row, Image } from "react-bootstrap";
+import { Button, Col, Form, Row, Image, Card } from "react-bootstrap";
 import styled from "styled-components";
 import { createProduct, updateProduct } from "./productsAPI";
 import { FlexRow } from "../../../../react-table/flex.styled";
+import { UploadSimple } from "phosphor-react";
 
 interface Props {
   callbackSubmit: (value: any) => void;
@@ -18,6 +19,7 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isActive, setIsActive] = useState(true);
 
   // Tentukan apakah ini mode edit
   const isEditMode = !!dataSelected?.id;
@@ -36,6 +38,7 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<IProduct>({
     resolver: yupResolver(validationsSchema) as any,
@@ -50,20 +53,27 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
     },
   });
 
+  const statusvalue = watch("status");
+
   useEffect(() => {
     if (dataSelected) {
       reset(dataSelected);
       if (dataSelected.image_url) {
         setImagePreview(`http://localhost:8000${dataSelected.image_url}`);
       }
+
+      setIsActive(dataSelected.status === "active");
     }
   }, [dataSelected, reset]);
 
-  // Handle file selection
+  const handleStatusToggle = (checked: boolean) => {
+    setIsActive(checked);
+    setValue("status", checked ? "active" : "inactive");
+  };
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
       if (!allowedTypes.includes(file.type)) {
         alert("Only JPG, JPEG, and PNG files are allowed");
@@ -78,7 +88,6 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
 
       setSelectedFile(file);
 
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -123,7 +132,6 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
     try {
       setIsUploading(true);
 
-      // If there's a new file selected, upload it first
       if (selectedFile) {
         const imageUrl = await uploadImage(selectedFile);
         valueForm.image_url = imageUrl;
@@ -153,10 +161,7 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
       <Row>
         <Col md={4}>
           <Form.Group className="mb-3">
-            <Form.Label className="font-size-14">Product Image</Form.Label>
-
             <div className="d-flex flex-column align-items-center">
-              {/* Kotak Preview */}
               <div
                 style={{
                   width: "100%",
@@ -190,7 +195,6 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
                 )}
               </div>
 
-              {/* Input File Hidden */}
               <input
                 id="uploadInput"
                 type="file"
@@ -199,114 +203,114 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
                 style={{ display: "none" }}
               />
 
-              <Button
-                className="mt-3"
-                variant="outline-secondary"
+              <StyledButtonUpload
+                className="mt-3 w-100 gap-2"
                 onClick={() => document.getElementById("uploadInput")?.click()}
                 disabled={isUploading}
               >
-                Unggah Gambar
-              </Button>
+                <UploadSimple size={18} /> Unggah Gambar
+              </StyledButtonUpload>
 
               {imagePreview && (
-                <Button
-                  variant="outline-danger"
-                  size="sm"
+                <StyledButtonUpload
                   className="mt-2"
                   onClick={removeProductImage}
                   disabled={isUploading}
                 >
                   Hapus Gambar
-                </Button>
+                </StyledButtonUpload>
               )}
             </div>
-
-            <Form.Text className="text-muted">
-              Upload JPG, JPEG, atau PNG (max 5MB)
-            </Form.Text>
           </Form.Group>
         </Col>
 
-        {/* Name */}
         <Col md={8}>
-          <Form.Group className="mb-3">
-            <Form.Label className="font-size-14">Product Name</Form.Label>
-            <Form.Control
-              {...register("name")}
-              isInvalid={Boolean(errors?.name)}
-              className="border-radius-5 p-6 height-40px"
-              placeholder="Enter Product Name"
-              disabled={isUploading}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors?.name?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label className="font-size-14">Description</Form.Label>
-            <Form.Control
-              {...register("description")}
-              isInvalid={Boolean(errors?.description)}
-              className="border-radius-5 p-6"
-              placeholder="Enter Description"
-              as="textarea"
-              rows={4}
-              disabled={isUploading}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors?.description?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label className="font-size-14">Category</Form.Label>
+                <StyledTitle>
+                  Nama Produk{" "}
+                  <span style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}>
+                    *
+                  </span>
+                </StyledTitle>
                 <Form.Control
+                  {...register("name")}
+                  isInvalid={Boolean(errors?.name)}
+                  className="border-radius-5 p-6 height-40px"
+                  placeholder="Masukan nama produk"
+                  disabled={isUploading}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.name?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <StyledTitle>
+                  Kategori Produk{" "}
+                  <span style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}>
+                    *
+                  </span>
+                </StyledTitle>
+                <Form.Select
                   {...register("category")}
                   isInvalid={Boolean(errors?.category)}
                   className="border-radius-5 p-6 height-40px"
-                  placeholder="Enter Category"
                   disabled={isUploading}
-                />
+                >
+                  <option value="">Pilih kategori</option>
+                  <option value="Smartphone">Smartphone</option>
+                  <option value="Laptop">Laptop</option>
+                  <option value="Alat Tulis">Alat Tulis</option>
+                </Form.Select>
                 <Form.Control.Feedback type="invalid">
                   {errors?.category?.message}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
-
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label className="font-size-14">Status</Form.Label>
-                <Form.Select
-                  {...register("status")}
-                  isInvalid={Boolean(errors?.status)}
-                  className="border-radius-5 p-6 height-40px"
-                  disabled={isUploading}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </Form.Select>
-                <Form.Control.Feedback type="invalid">
-                  {errors?.status?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
           </Row>
+
+          {/* Deskripsi Produk */}
+          <div className="mb-3">
+            <StyledTitle>Deskripsi Produk</StyledTitle>
+            <Form.Group>
+              <Form.Control
+                {...register("description")}
+                isInvalid={Boolean(errors?.description)}
+                className="border-radius-5 p-6"
+                placeholder="Masukan deskripsi produk"
+                as="textarea"
+                rows={4}
+                disabled={isUploading}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors?.description?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
+          </div>
 
           <Row>
             <Col md={6}>
+              <StyledTitle>
+                Harga Satuan{" "}
+                <span style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}>
+                  *
+                </span>
+              </StyledTitle>
               <Form.Group className="mb-3">
-                <Form.Label className="font-size-14">Price</Form.Label>
-                <Form.Control
-                  {...register("price")}
-                  type="number"
-                  isInvalid={Boolean(errors?.price)}
-                  className="border-radius-5 p-6 height-40px"
-                  placeholder="Enter Price"
-                  disabled={isUploading}
-                />
+                <div className="input-group">
+                  <span className="input-group-text">Rp</span>
+                  <Form.Control
+                    {...register("price")}
+                    type="number"
+                    isInvalid={Boolean(errors?.price)}
+                    className="border-radius-5 p-6 height-40px"
+                    placeholder="0"
+                    disabled={isUploading}
+                  />
+                </div>
                 <Form.Control.Feedback type="invalid">
                   {errors?.price?.message}
                 </Form.Control.Feedback>
@@ -314,32 +318,79 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
             </Col>
 
             <Col md={6}>
+              <StyledTitle>
+                Stok Awal{" "}
+                <span style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}>
+                  *
+                </span>
+              </StyledTitle>
               <Form.Group className="mb-3">
-                <Form.Label className="font-size-14">Stock</Form.Label>
-                <Form.Control
-                  {...register("stock")}
-                  type="number"
-                  isInvalid={Boolean(errors?.stock)}
-                  className="border-radius-5 p-6 height-40px"
-                  placeholder="Enter Stock"
-                  disabled={isUploading}
-                />
+                <div className="input-group">
+                  <Form.Control
+                    {...register("stock")}
+                    type="number"
+                    isInvalid={Boolean(errors?.stock)}
+                    className="border-radius-5 p-6 height-40px"
+                    placeholder="0"
+                    disabled={isUploading}
+                  />
+                  <span className="input-group-text">Unit</span>
+                </div>
                 <Form.Control.Feedback type="invalid">
                   {errors?.stock?.message}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
+
+          {/* Status Produk */}
+          <div className="mb-3">
+            <StyledTitle className="">Status Produk</StyledTitle>
+            <Card className="p-3">
+              <div className="d-flex justify-content-between align-items-center">
+                <div className="d-flex flex-column">
+                  <Description>
+                    Sistem akan menandai produk sebagai "Menipis" secara
+                    otomatis jika stoknya mendekati habis.
+                  </Description>
+                </div>
+                <div className="d-flex align-items-center">
+                  <StyledTitle
+                    htmlFor="status-switch"
+                    className="me-2 mb-0 cursor-pointer"
+                    style={{ cursor: "pointer", fontWeight: "400" }}
+                  >
+                    {isActive ? "Aktif" : "Nonaktif"}
+                  </StyledTitle>
+
+                  <SwitchContainer>
+                    <SwitchInput
+                      type="checkbox"
+                      id="status-switch"
+                      checked={isActive}
+                      onChange={(e) => handleStatusToggle(e.target.checked)}
+                      disabled={isUploading}
+                    />
+                    <SwitchSlider className="slider round" />
+                  </SwitchContainer>
+                </div>
+
+                <input
+                  type="hidden"
+                  {...register("status")}
+                  value={isActive ? "active" : "inactive"}
+                />
+              </div>
+            </Card>
+          </div>
         </Col>
       </Row>
 
-      {/* Submit */}
-
-      <FlexRow className="d-flex justify-content-end align-items-center gap-2">
-        <StyledButtonCancel onClick={onCancel}>cancel</StyledButtonCancel>
-        {/* <StyledButtonCancel type="button" onClick={onCancel}>
+      {/* Tombol Aksi */}
+      <div className="mt-4 d-flex justify-content-end gap-2">
+        <StyledButtonCancel onClick={onCancel} type="button">
           Cancel
-        </StyledButtonCancel> */}
+        </StyledButtonCancel>
         <StyledButton type="submit" disabled={isUploading}>
           {isUploading
             ? "Uploading..."
@@ -347,13 +398,55 @@ function ProductsForm({ callbackSubmit, dataSelected, onCancel }: Props) {
             ? "Update"
             : "Tambah"}
         </StyledButton>
-      </FlexRow>
+      </div>
     </StyledForm>
   );
 }
 
 export default ProductsForm;
+const StyledButtonUpload = styled.button`
+  color: var(--Font-Primary, #020c1f);
+  height: 40px;
+  font-size: 0.93333rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.33333rem;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #d0d3d8;
+
+  cursor: pointer;
+`;
+
+const Description = styled.div`
+  color: var(--Font-Secondary, #5d6471);
+
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.2rem;
+`;
+
+const StyledTitle = styled(Form.Label)`
+  color: var(--Font-Primary, #020c1f);
+  font-size: 0.93333rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.33333rem;
+`;
+
+const FlexRoww = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+`;
 const StyledForm = styled(Form)`
   .form-label {
     font-weight: 500;
@@ -369,28 +462,21 @@ const StyledForm = styled(Form)`
   .mb-3 {
     margin-bottom: 1.25rem !important;
   }
-
-  button[type="submit"] {
-    margin-top: 1.5rem;
-    padding: 0.6rem 1.5rem;
-    font-weight: 500;
-  }
 `;
+
 const StyledButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
   height: 40px;
   padding: 0 16px;
-
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
-  border-radius: 0.66667rem;
+  border-radius: 8px;
   background: var(--Border-Secondary, #c0c5cc);
   border: 1px solid #d0d3d8;
   color: white;
-  margin-bottom: 10px;
   cursor: pointer;
 `;
 
@@ -400,12 +486,70 @@ const StyledButtonCancel = styled.button`
   justify-content: center;
   height: 40px;
   padding: 0 16px;
-  border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
+  border-radius: 8px;
   background: #fff;
   border: 1px solid #d0d3d8;
   color: #555;
   cursor: pointer;
+`;
+
+const SwitchContainer = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+`;
+
+const SwitchInput = styled.input`
+  opacity: 0;
+  width: 0;
+  height: 0;
+
+  &:checked + .slider {
+    background-color: #ff7900;
+  }
+
+  &:checked + .slider:before {
+    transform: translateX(26px);
+  }
+
+  &:disabled + .slider {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const SwitchSlider = styled.span`
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+
+  &:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+
+  &.round {
+    border-radius: 34px;
+  }
+
+  &.round:before {
+    border-radius: 50%;
+  }
 `;

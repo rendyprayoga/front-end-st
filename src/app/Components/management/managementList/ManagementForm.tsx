@@ -13,6 +13,7 @@ interface Props {
   callbackSubmit: (value: any) => void;
   dataSelected?: IManagementUser;
   isEdit?: boolean;
+  onCancel: () => void;
 }
 
 interface IManagementUserForm extends IManagementUser {
@@ -20,7 +21,7 @@ interface IManagementUserForm extends IManagementUser {
   confirmPassword?: string;
 }
 
-function ManagementForm({ callbackSubmit, dataSelected }: Props) {
+function ManagementForm({ callbackSubmit, dataSelected, onCancel }: Props) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
@@ -441,44 +442,74 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
       </Row>
 
       {/* Submit */}
-      <Button type="submit" disabled={isUploading}>
-        {isUploading ? "Uploading..." : isEditMode ? "Update" : "Add New"} User
-      </Button>
+
+      <FlexRoww>
+        <StyledButtonCancel onClick={onCancel}>cancel</StyledButtonCancel>
+        {/* <StyledButtonCancel type="button" onClick={onCancel}>
+          Cancel
+        </StyledButtonCancel> */}
+        <StyledButton type="submit" disabled={isUploading}>
+          {isUploading ? "Uploading..." : isEditMode ? "Update" : "Add New"}{" "}
+          User
+        </StyledButton>
+      </FlexRoww>
     </Form>
   );
 }
 
 export default ManagementForm;
-/* Styled Buttons (tidak diubah) */
-const StyledButton = styled(Button as any)`
+
+const FlexRoww = styled.div`
   display: flex;
-  height: 40px;
-  padding: 0 12px;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
-  border-radius: 10px;
-  background: #c0c5cc;
+`;
+const StyledForm = styled(Form)`
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .form-control,
+  .form-select {
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .mb-3 {
+    margin-bottom: 1.25rem !important;
+  }
+`;
+
+const StyledButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
   font-size: 14px;
   font-weight: 500;
-  border: none;
-  &:hover {
-    background: #b1b6bd;
-  }
+  line-height: 1;
+  border-radius: 8px;
+  background: var(--Border-Secondary, #c0c5cc);
+  border: 1px solid #d0d3d8;
+  color: white;
+  cursor: pointer;
 `;
 
 const StyledButtonCancel = styled.button`
   display: flex;
-  height: 40px;
-  padding: 0 12px;
-  justify-content: center;
   align-items: center;
-  gap: 8px;
-  color: var(--black);
-  border-radius: 10px;
-  border: 1px solid #e7eaf0;
-  background: #fff;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
   font-size: 14px;
   font-weight: 500;
-  line-height: 140%;
+  line-height: 1;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #d0d3d8;
+  color: #555;
+  cursor: pointer;
 `;
