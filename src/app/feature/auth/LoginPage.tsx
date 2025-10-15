@@ -8,6 +8,9 @@ import { useNavigate } from "react-router-dom";
 import IconSignIn from "../../Components/icon/SignInLogo/IconSignIn";
 import styled from "styled-components";
 import { Eye, EyeSlash } from "phosphor-react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../store";
+import { loginFailure, loginStart, loginSuccess } from "./authSlice";
 
 interface LoginFormInputs {
   email: string;
@@ -15,9 +18,9 @@ interface LoginFormInputs {
 }
 
 const LoginPage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error } = useSelector((state: RootState) => state.auth);
+
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -52,13 +55,19 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = async (data: LoginFormInputs) => {
     try {
-      setLoading(true);
-      setError("");
-      setSuccess("");
+      dispatch(loginStart());
       const res = await authService.login(data.email, data.password);
+
+      const userData = {
+        email: data.email,
+        role: res.user?.role,
+        token: res.token,
+      };
 
       localStorage.setItem("token", res.token);
       localStorage.setItem("user", JSON.stringify(res.user));
+
+      dispatch(loginSuccess(userData));
 
       if (res.user?.role === "admin") {
         navigate("/product-details");
@@ -66,9 +75,7 @@ const LoginPage: React.FC = () => {
         navigate("/view-product");
       }
     } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      dispatch(loginFailure(err.message));
     }
   };
 
@@ -90,8 +97,8 @@ const LoginPage: React.FC = () => {
         <Description className="mb-3">
           Enter your username and password correctly
         </Description>
+
         {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
 
         <Form.Group className="mb-3">
           <StyledLabel>Username</StyledLabel>
@@ -120,11 +127,7 @@ const LoginPage: React.FC = () => {
               onClick={() => setShowPassword((prev) => !prev)}
               aria-label="Toggle password visibility"
             >
-              {showPassword ? (
-                <EyeSlash size={20} weight="regular" />
-              ) : (
-                <Eye size={20} weight="regular" />
-              )}
+              {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
             </EyeButton>
           </PasswordWrapper>
           <Form.Control.Feedback type="invalid">
@@ -139,7 +142,6 @@ const LoginPage: React.FC = () => {
             border: "none",
             fontSize: "14px",
             fontWeight: "500",
-            lineHeight: "150%",
           }}
           type="submit"
           className="w-100"
@@ -164,25 +166,21 @@ const Description = styled.div`
   color: var(--Font-Secondary, #5b5d63);
   font-size: 14px;
   font-weight: 400;
-  line-height: 150%;
 `;
+
 const StyledLabel = styled(Form.Label)`
   color: var(--Font-Primary, #050506);
   font-size: 14px;
   font-weight: 500;
-  line-height: 150%;
 `;
 
 const StyledControl = styled(Form.Control)`
   color: var(--Font-Placeholder, #7a7c81);
   font-size: 14px;
   font-weight: 400;
-  line-height: 15s0%;
-
-  //   &:: placeholder {
-  //     font-family: "Inter";
-  //   }
+  line-height: 150%;
 `;
+
 const PasswordWrapper = styled.div`
   position: relative;
   display: flex;
