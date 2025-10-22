@@ -13,6 +13,7 @@ interface Props {
   callbackSubmit: (value: any) => void;
   dataSelected?: IManagementUser;
   isEdit?: boolean;
+  onCancel: () => void;
 }
 
 interface IManagementUserForm extends IManagementUser {
@@ -20,12 +21,11 @@ interface IManagementUserForm extends IManagementUser {
   confirmPassword?: string;
 }
 
-function ManagementForm({ callbackSubmit, dataSelected }: Props) {
+function ManagementForm({ callbackSubmit, dataSelected, onCancel }: Props) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
 
-  // Tentukan apakah ini mode edit
   const isEditMode = !!dataSelected?.id;
 
   const validationsSchema = Yup.object().shape({
@@ -109,18 +109,15 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
     }
   }, [dataSelected, reset]);
 
-  // Handle file selection
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
       if (!allowedTypes.includes(file.type)) {
         alert("Only JPG, JPEG, and PNG files are allowed");
         return;
       }
 
-      // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert("File size must be less than 5MB");
         return;
@@ -167,7 +164,6 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
     try {
       setIsUploading(true);
 
-      // If there's a new file selected, upload it first
       if (selectedFile) {
         const imageUrl = await uploadImage(selectedFile);
         valueForm.profile_picture = imageUrl;
@@ -217,268 +213,305 @@ function ManagementForm({ callbackSubmit, dataSelected }: Props) {
   };
 
   return (
-    <Form onSubmit={handleSubmit(handleSubmitForm)}>
-      {/* Profile Picture Upload */}
-      <Form.Group className="mb-3">
-        <Form.Label className="font-size-14">Profile Picture</Form.Label>
-
-        <div className="d-flex flex-column align-items-center">
-          <div
-            style={{
-              width: "150px",
-              height: "150px",
-              background: "#F8F9FA",
-              border: "1px dashed #D0D3D8",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              cursor: "pointer",
-            }}
-            onClick={() =>
-              document.getElementById("uploadProfileInput")?.click()
-            }
-          >
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Profile Preview"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              <div className="text-muted d-flex flex-column align-items-center">
-                <i
-                  className="bi bi-person-circle"
-                  style={{ fontSize: "48px" }}
-                ></i>
-                <small>Pilih Foto</small>
-              </div>
-            )}
-          </div>
-
-          <input
-            id="uploadProfileInput"
-            type="file"
-            accept=".jpg,.jpeg,.png"
-            onChange={handleFileSelect}
-            style={{ display: "none" }}
-            disabled={isUploading}
-          />
-
-          <Button
-            className="mt-3"
-            variant="outline-secondary"
-            onClick={() =>
-              document.getElementById("uploadProfileInput")?.click()
-            }
-            disabled={isUploading}
-          >
-            Unggah Gambar
-          </Button>
-
-          {imagePreview && (
-            <Button
-              variant="outline-danger"
-              size="sm"
-              className="mt-2"
-              onClick={removeProfilePicture}
-              disabled={isUploading}
-            >
-              Hapus Gambar
-            </Button>
-          )}
-        </div>
-
-        <Form.Text className="text-muted">
-          Upload JPG, JPEG, atau PNG (max 5MB)
-        </Form.Text>
-      </Form.Group>
-
-      {/* Email */}
-      <Form.Group className="mb-3">
-        <Form.Label className="font-size-14">Email</Form.Label>
-        <Form.Control
-          {...register("email")}
-          isInvalid={Boolean(errors?.email)}
-          className="border-radius-5 p-6 height-40px"
-          placeholder="Enter Email"
-          type="email"
-          disabled={isUploading}
-        />
-        <Form.Control.Feedback type="invalid">
-          {errors?.email?.message}
-        </Form.Control.Feedback>
-      </Form.Group>
-
-      {/* Full Name */}
-      <Form.Group className="mb-3">
-        <Form.Label className="font-size-14">Nama User</Form.Label>
-        <Form.Control
-          {...register("full_name")}
-          isInvalid={Boolean(errors?.full_name)}
-          className="border-radius-5 p-6 height-40px"
-          placeholder="Enter Full Name"
-          disabled={isUploading}
-        />
-        <Form.Control.Feedback type="invalid">
-          {errors?.full_name?.message}
-        </Form.Control.Feedback>
-      </Form.Group>
-
-      {/* Password & Confirm Password */}
+    <StyledForm onSubmit={handleSubmit(handleSubmitForm)}>
       <Row>
-        <Col md={6}>
+        <Col md={4}>
           <Form.Group className="mb-3">
-            <Form.Label className="font-size-14">
-              Password {!isEditMode && <span className="text-danger">*</span>}
-            </Form.Label>
-            <Form.Control
-              {...register("password")}
-              isInvalid={Boolean(errors?.password)}
-              className="border-radius-5 p-6 height-40px"
-              placeholder={
-                isEditMode ? "Enter new password (optional)" : "Enter Password"
-              }
-              type="password"
-              disabled={isUploading}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors?.password?.message}
-            </Form.Control.Feedback>
+            <div className="d-flex flex-column align-items-center">
+              <div
+                style={{
+                  width: "150px",
+                  height: "150px",
+                  background: "#F8F9FA",
+                  border: "1px dashed #D0D3D8",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                }}
+                onClick={() =>
+                  document.getElementById("uploadProfileInput")?.click()
+                }
+              >
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt="Profile Preview"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div className="text-muted d-flex flex-column align-items-center">
+                    <i
+                      className="bi bi-person-circle"
+                      style={{ fontSize: "48px" }}
+                    ></i>
+                    <small>Pilih Foto</small>
+                  </div>
+                )}
+              </div>
+
+              <input
+                id="uploadProfileInput"
+                type="file"
+                accept=".jpg,.jpeg,.png"
+                onChange={handleFileSelect}
+                style={{ display: "none" }}
+                disabled={isUploading}
+              />
+
+              <Button
+                className="mt-3"
+                variant="outline-secondary"
+                onClick={() =>
+                  document.getElementById("uploadProfileInput")?.click()
+                }
+                disabled={isUploading}
+              >
+                Unggah Gambar
+              </Button>
+
+              {imagePreview && (
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  className="mt-2"
+                  onClick={removeProfilePicture}
+                  disabled={isUploading}
+                >
+                  Hapus Gambar
+                </Button>
+              )}
+            </div>
+
             <Form.Text className="text-muted">
-              {isEditMode
-                ? "Leave blank to keep current password"
-                : "Minimum 6 characters"}
+              Upload JPG, JPEG, atau PNG (max 5MB)
             </Form.Text>
           </Form.Group>
         </Col>
 
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label className="font-size-14">
-              Confirm Password{" "}
-              {!isEditMode && <span className="text-danger">*</span>}
-            </Form.Label>
-            <Form.Control
-              {...register("confirmPassword")}
-              isInvalid={Boolean(errors?.confirmPassword)}
-              className="border-radius-5 p-6 height-40px"
-              placeholder={
-                isEditMode
-                  ? "Confirm new password (optional)"
-                  : "Confirm Password"
-              }
-              type="password"
-              disabled={isUploading || (isEditMode && !passwordValue)}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors?.confirmPassword?.message}
-            </Form.Control.Feedback>
-            {isEditMode && !passwordValue && (
-              <Form.Text className="text-muted">
-                Confirm password is optional when password is empty
-              </Form.Text>
-            )}
-          </Form.Group>
-        </Col>
-      </Row>
+        <Col md={8}>
+          <Row>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="font-size-14">Nama User</Form.Label>
+                <Form.Control
+                  {...register("full_name")}
+                  isInvalid={Boolean(errors?.full_name)}
+                  className="border-radius-5 p-6 height-40px"
+                  placeholder="Enter Full Name"
+                  disabled={isUploading}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.full_name?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="font-size-14">Phone Number</Form.Label>
+                <Form.Control
+                  {...register("phone")}
+                  isInvalid={Boolean(errors?.phone)}
+                  className="border-radius-5 p-6 height-40px"
+                  placeholder="Enter Phone Number"
+                  disabled={isUploading}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.phone?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
 
-      {/* Role & Status */}
-      <Row>
-        <Col md={6}>
           <Form.Group className="mb-3">
-            <Form.Label className="font-size-14">Role</Form.Label>
-            <Form.Select
-              {...register("role")}
-              isInvalid={Boolean(errors?.role)}
-              className="border-radius-5 p-6 height-40px"
-              disabled={isUploading}
-            >
-              <option value="">Select Role</option>
-              <option value="admin">Admin</option>
-              <option value="user">User</option>
-            </Form.Select>
-            <Form.Control.Feedback type="invalid">
-              {errors?.role?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Col>
-
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label className="font-size-14">Phone Number</Form.Label>
+            <Form.Label className="font-size-14">Email</Form.Label>
             <Form.Control
-              {...register("phone")}
-              isInvalid={Boolean(errors?.phone)}
+              {...register("email")}
+              isInvalid={Boolean(errors?.email)}
               className="border-radius-5 p-6 height-40px"
-              placeholder="Enter Phone Number"
+              placeholder="Enter Email"
+              type="email"
               disabled={isUploading}
             />
             <Form.Control.Feedback type="invalid">
-              {errors?.phone?.message}
+              {errors?.email?.message}
             </Form.Control.Feedback>
           </Form.Group>
+
+          <Row>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="font-size-14">
+                  Password{" "}
+                  {!isEditMode && <span className="text-danger">*</span>}
+                </Form.Label>
+                <Form.Control
+                  {...register("password")}
+                  isInvalid={Boolean(errors?.password)}
+                  className="border-radius-5 p-6 height-40px"
+                  placeholder={
+                    isEditMode
+                      ? "Enter new password (optional)"
+                      : "Enter Password"
+                  }
+                  type="password"
+                  disabled={isUploading}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.password?.message}
+                </Form.Control.Feedback>
+                <Form.Text className="text-muted">
+                  {isEditMode
+                    ? "Leave blank to keep current password"
+                    : "Minimum 6 characters"}
+                </Form.Text>
+              </Form.Group>
+            </Col>
+
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="font-size-14">
+                  Confirm Password{" "}
+                  {!isEditMode && <span className="text-danger">*</span>}
+                </Form.Label>
+                <Form.Control
+                  {...register("confirmPassword")}
+                  isInvalid={Boolean(errors?.confirmPassword)}
+                  className="border-radius-5 p-6 height-40px"
+                  placeholder={
+                    isEditMode
+                      ? "Confirm new password (optional)"
+                      : "Confirm Password"
+                  }
+                  type="password"
+                  disabled={isUploading || (isEditMode && !passwordValue)}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors?.confirmPassword?.message}
+                </Form.Control.Feedback>
+                {isEditMode && !passwordValue && (
+                  <Form.Text className="text-muted">
+                    Confirm password is optional when password is empty
+                  </Form.Text>
+                )}
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="font-size-14">Role</Form.Label>
+                <Form.Select
+                  {...register("role")}
+                  isInvalid={Boolean(errors?.role)}
+                  className="border-radius-5 p-6 height-40px"
+                  disabled={isUploading}
+                >
+                  <option value="">Select Role</option>
+                  <option value="admin">Admin</option>
+                  <option value="user">User</option>
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {errors?.role?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+
+            <Col md={6}></Col>
+
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label className="font-size-14">Status</Form.Label>
+                <Form.Select
+                  {...register("is_active")}
+                  isInvalid={Boolean(errors?.is_active)}
+                  className="border-radius-5 p-6 height-40px"
+                  disabled={isUploading}
+                >
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {errors?.is_active?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
         </Col>
 
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label className="font-size-14">Status</Form.Label>
-            <Form.Select
-              {...register("is_active")}
-              isInvalid={Boolean(errors?.is_active)}
-              className="border-radius-5 p-6 height-40px"
-              disabled={isUploading}
-            >
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </Form.Select>
-            <Form.Control.Feedback type="invalid">
-              {errors?.is_active?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Col>
+        <FlexRoww>
+          <StyledButtonCancel onClick={onCancel}>cancel</StyledButtonCancel>
+
+          <StyledButton type="submit" disabled={isUploading}>
+            {isUploading ? "Uploading..." : isEditMode ? "Update" : "Add New"}{" "}
+            User
+          </StyledButton>
+        </FlexRoww>
       </Row>
-
-      {/* Submit */}
-      <Button type="submit" disabled={isUploading}>
-        {isUploading ? "Uploading..." : isEditMode ? "Update" : "Add New"} User
-      </Button>
-    </Form>
+    </StyledForm>
   );
 }
 
 export default ManagementForm;
-/* Styled Buttons (tidak diubah) */
-const StyledButton = styled(Button as any)`
+
+const FlexRoww = styled.div`
   display: flex;
-  height: 40px;
-  padding: 0 12px;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
-  border-radius: 10px;
-  background: #c0c5cc;
+`;
+const StyledForm = styled(Form)`
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .form-control,
+  .form-select {
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .mb-3 {
+    margin-bottom: 1.25rem !important;
+  }
+`;
+
+const StyledButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
   font-size: 14px;
   font-weight: 500;
-  border: none;
-  &:hover {
-    background: #b1b6bd;
-  }
+  line-height: 1;
+  border-radius: 8px;
+  background: var(--Border-Secondary, #c0c5cc);
+  border: 1px solid #d0d3d8;
+  color: white;
+  cursor: pointer;
 `;
 
 const StyledButtonCancel = styled.button`
   display: flex;
-  height: 40px;
-  padding: 0 12px;
-  justify-content: center;
   align-items: center;
-  gap: 8px;
-  color: var(--black);
-  border-radius: 10px;
-  border: 1px solid #e7eaf0;
-  background: #fff;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
   font-size: 14px;
   font-weight: 500;
-  line-height: 140%;
+  line-height: 1;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #d0d3d8;
+  color: #555;
+  cursor: pointer;
 `;

@@ -1,11 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Dropdown, Modal, Table, Image } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  Modal,
+  Table,
+  Image,
+  Row,
+  Col,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { IParamsGetProduct, IProduct } from "../interface/products.interface";
 import ProductsForm from "./ProductForm";
 import { deleteProduct, getProducts } from "./productsAPI";
 import styled from "styled-components";
-import { CaretLeft, CaretRight, DotsThree, Eye } from "phosphor-react";
+import {
+  CaretLeft,
+  CaretRight,
+  CheckCircle,
+  DotsThree,
+  Eye,
+  XCircle,
+} from "phosphor-react";
 
 function ProductsList() {
   const navigate = useNavigate();
@@ -37,7 +52,7 @@ function ProductsList() {
       category: "",
       stock: 0,
       image_url: "",
-      status: "",
+      status: "active",
     });
     setShow(true);
   };
@@ -195,13 +210,13 @@ function ProductsList() {
           <StyledTable>
             <thead>
               <tr>
-                <th>Nama Produk</th>
-                <th>Kategori</th>
-                <th>Stok</th>
-                <th>Harga</th>
-                <th>Status</th>
-                <th></th>
-                <th></th>
+                <th style={{ width: "38%" }}>Nama Produk</th>
+                <th style={{ width: "15%" }}>Kategori</th>
+                <th style={{ width: "10%" }}>Stok</th>
+                <th style={{ width: "15%" }}>Harga</th>
+                <th style={{ width: "12%" }}>Status</th>
+                {/* <th style={{ width: "35%" }}></th> */}
+                <th style={{ width: "40%" }}></th>
               </tr>
             </thead>
             <tbody>
@@ -236,41 +251,52 @@ function ProductsList() {
                     </td>
                     <td>
                       <StatusBadge $isActive={product.status === "active"}>
-                        {product.status === "active" ? "Active" : "Inactive"}
+                        {product.status === "active" ? (
+                          <>
+                            <CheckCircle size={14} weight="fill" />
+                            Active
+                          </>
+                        ) : (
+                          <>
+                            <XCircle size={14} weight="fill" />
+                            Inactive
+                          </>
+                        )}
                       </StatusBadge>
                     </td>
+
                     <td>
-                      <div
-                        onClick={() => onClickDetail(product)}
-                        className="d-flex align-items-center cursor-pointer gap-2 text-primary"
-                        style={{ cursor: "pointer" }}
-                      >
-                        Lihat Detail
+                      <div className="d-flex align-items-center gap-2">
+                        <div
+                          onClick={() => onClickDetail(product)}
+                          className="d-flex align-items-center cursor-pointer gap-2 "
+                          style={{ cursor: "pointer", color: "#FF7900" }}
+                        >
+                          Lihat Detail
+                        </div>
+                        <Dropdown>
+                          <StyledToggle variant="" className="border-0 p-0">
+                            <DotsThree size={22} />
+                          </StyledToggle>
+                          <StyledDropdownMenu>
+                            <Dropdown.Item
+                              onClick={() => onClickEdit(product)}
+                              className="d-flex align-items-center gap-2"
+                            >
+                              Edit
+                            </Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item
+                              onClick={() =>
+                                setModalDelete({ show: true, data: product })
+                              }
+                              className="text-danger d-flex align-items-center gap-2"
+                            >
+                              Delete
+                            </Dropdown.Item>
+                          </StyledDropdownMenu>
+                        </Dropdown>
                       </div>
-                    </td>
-                    <td>
-                      <Dropdown>
-                        <StyledToggle variant="" className="border-0 p-0">
-                          <DotsThree size={22} />
-                        </StyledToggle>
-                        <StyledDropdownMenu>
-                          <Dropdown.Item
-                            onClick={() => onClickEdit(product)}
-                            className="d-flex align-items-center gap-2"
-                          >
-                            Edit
-                          </Dropdown.Item>
-                          <Dropdown.Divider />
-                          <Dropdown.Item
-                            onClick={() =>
-                              setModalDelete({ show: true, data: product })
-                            }
-                            className="text-danger d-flex align-items-center gap-2"
-                          >
-                            Delete
-                          </Dropdown.Item>
-                        </StyledDropdownMenu>
-                      </Dropdown>
                     </td>
                   </tr>
                 </React.Fragment>
@@ -301,10 +327,16 @@ function ProductsList() {
       </div>
 
       {/* Modal Form Product */}
-      <StyledModal show={show} onHide={handleClose} size="lg">
+      <Modal
+        show={show}
+        onHide={handleClose}
+        centered
+        size="lg"
+        className="rounded"
+      >
         <Modal.Header closeButton>
           <div className="d-flex flex-column">
-            <TitleModal>Form Product</TitleModal>
+            <TitleModal>Tambah Product</TitleModal>
             <ProductDescription>
               Masukkan detail produk untuk menambahkannya ke inventaris.
             </ProductDescription>
@@ -317,10 +349,131 @@ function ProductsList() {
             dataSelected={dataSelected}
           />
         </Modal.Body>
-      </StyledModal>
+      </Modal>
+
+      <Modal show={showDetail} onHide={handleCloseDetail} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Detail Produk</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <Row>
+            {/* --- Kiri: Gambar Produk --- */}
+            <Col md={4}>
+              <div className="d-flex flex-column align-items-center">
+                <div
+                  style={{
+                    width: "100%",
+                    height: "200px",
+
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    cursor: "pointer",
+                  }}
+                  onClick={() =>
+                    document.getElementById("uploadInput")?.click()
+                  }
+                >
+                  {dataSelected?.image_url ? (
+                    <Image
+                      src={`http://127.0.0.1:8000${dataSelected.image_url}`}
+                      alt="Product"
+                      width={120}
+                      height={120}
+                      style={{ borderRadius: "8px", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span style={{ color: "#aaa" }}>Tidak ada gambar</span>
+                  )}
+                </div>
+              </div>
+            </Col>
+
+            {/* --- Kanan: Detail Info Produk --- */}
+            <Col md={8}>
+              <Row>
+                <Col md={6}>
+                  <StyledTitle>
+                    Nama Produk{" "}
+                    <span
+                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
+                    >
+                      *
+                    </span>
+                  </StyledTitle>
+                  <p>{dataSelected?.name || "-"}</p>
+                </Col>
+
+                <Col md={6}>
+                  <StyledTitle>
+                    Kategori Produk{" "}
+                    <span
+                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
+                    >
+                      *
+                    </span>
+                  </StyledTitle>
+                  <p>{dataSelected?.category || "-"}</p>
+                </Col>
+              </Row>
+
+              <div className="mb-3">
+                <StyledTitle>Deskripsi Produk</StyledTitle>
+                <p>{dataSelected?.description || "-"}</p>
+              </div>
+
+              <Row>
+                <Col md={6}>
+                  <StyledTitle>
+                    Harga Satuan{" "}
+                    <span
+                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
+                    >
+                      *
+                    </span>
+                  </StyledTitle>
+                  <p>
+                    {dataSelected?.price ? `Rp ${dataSelected.price}` : "-"}
+                  </p>
+                </Col>
+
+                <Col md={6}>
+                  <StyledTitle>
+                    Stok Awal{" "}
+                    <span
+                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
+                    >
+                      *
+                    </span>
+                  </StyledTitle>
+                  <p>{dataSelected?.stock || "-"}</p>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDetail}>
+            Tutup
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              handleCloseDetail();
+              onClickEdit(dataSelected!);
+            }}
+          >
+            Edit Product
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Modal Detail Product */}
-      <Modal show={showDetail} onHide={handleCloseDetail} size="lg">
+      {/* <Modal show={showDetail} onHide={handleCloseDetail} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detail Product</Modal.Title>
         </Modal.Header>
@@ -407,7 +560,17 @@ function ProductsList() {
                   <DetailLabel>Status</DetailLabel>
                   <DetailValue>
                     <StatusBadge $isActive={dataSelected.status === "active"}>
-                      {dataSelected.status === "active" ? "Active" : "Inactive"}
+                      {dataSelected.status === "active" ? (
+                        <>
+                          <CheckCircle size={14} weight="fill" />
+                          Active
+                        </>
+                      ) : (
+                        <>
+                          <XCircle size={14} weight="fill" />
+                          Inactive
+                        </>
+                      )}
                     </StatusBadge>
                   </DetailValue>
                 </DetailRow>
@@ -429,7 +592,7 @@ function ProductsList() {
             Edit Product
           </Button>
         </Modal.Footer>
-      </Modal>
+      </Modal> */}
 
       {/* Modal Delete Confirmation */}
       <Modal show={modalDelete?.show} size="sm">
@@ -473,18 +636,13 @@ const StyledTableContainer = styled.div`
 const StyledTable = styled(Table)`
   margin: 0;
 
-  thead {
+  thead tr th {
     background: var(--BG-Secondary, #f5f7fa) !important;
+    color: var(--Font-Primary, #050506) !important;
 
-    th {
-      padding: 12px 16px;
-      font-weight: 500;
-      color: var(--Font-Primary, #050506);
-      border-bottom: 1px solid #e7eaf0;
-      font-size: 0.93333rem;
-
-      line-height: 1.33333rem;
-    }
+    font-weight: 500;
+    font-size: 0.93333rem;
+    padding: 12px 16px;
   }
 
   tbody {
@@ -547,9 +705,12 @@ const StatusBadge = styled.span<{ $isActive: boolean }>`
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
-  background-color: ${(props) => (props.$isActive ? "#e7f7ef" : "#fef3f2")};
-  color: ${(props) => (props.$isActive ? "#12b76a" : "#f04438")};
-  border: 1px solid ${(props) => (props.$isActive ? "#abefc6" : "#fecdca")};
+  background-color: ${(props) => (props.$isActive ? "#E9F9E9" : "#E7EAF0")};
+  color: ${(props) => (props.$isActive ? "#26A326" : "#020C1F")};
+  border: 1px solid ${(props) => (props.$isActive ? "none" : "#C0C5CC")};
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 `;
 
 const StyledTableFooter = styled.div`
@@ -731,7 +892,7 @@ const StyledToggle = styled(Dropdown.Toggle)`
 const StyledModal = styled(Modal)`
   .modal-content {
     border-radius: 16px;
-    padding: 1.33333rem;
+    padding: 1rem;
   }
 
   .modal-header {
@@ -740,7 +901,7 @@ const StyledModal = styled(Modal)`
   }
 
   .modal-title {
-    font-size: 18px;
+    font-size: 1.33333rem;
     font-weight: 600;
   }
 `;

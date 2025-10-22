@@ -1,11 +1,14 @@
 import React from "react";
-import Navbar from "../../layout/Navbar";
+
 import TablePage from "../product/TablePage";
+import NavbarUser from "../../layout/NavbarUser";
+import HeroSection from "../../layout/Hero/HeroSection";
 
 export default function ViewProduct() {
   return (
     <>
-      <Navbar />
+      <NavbarUser />
+      <HeroSection />
       <div
         style={{
           padding: "0 80px",

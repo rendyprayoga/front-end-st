@@ -4,6 +4,7 @@ import ProductsDetails from "./app/Components/admin/product/product/ProductsDeta
 import { PrivateRoute } from "./app/routes/PrivateRoutes";
 import ViewProduct from "./app/Components/user/view/ViewProduct";
 import ManagementUserPage from "./app/pages/management/ManagementUserPage";
+import DetailProduct from "./app/Components/user/view/DetailProduct";
 
 function App() {
   return (
@@ -36,6 +37,15 @@ function App() {
           element={
             <PrivateRoute allowedRoles={["user"]}>
               <ViewProduct />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/view-product/:id"
+          element={
+            <PrivateRoute allowedRoles={["user"]}>
+              <DetailProduct />
             </PrivateRoute>
           }
         />

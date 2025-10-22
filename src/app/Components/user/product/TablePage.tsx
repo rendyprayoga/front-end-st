@@ -59,6 +59,10 @@ function ProductsList() {
     }
   };
 
+  const onClickDetail = (item: IProduct) => {
+    navigate(`/view-product/${item.id}`, { state: { product: item } });
+  };
+
   return (
     <>
       <div>
@@ -74,7 +78,10 @@ function ProductsList() {
         <Row className="g-4" style={{ marginTop: "1rem" }}>
           {products.map((product, index: number) => (
             <Col md={3} key={product.id}>
-              <StyledCard className="w-100">
+              <StyledCard
+                className="w-100"
+                onClick={() => onClickDetail(product)}
+              >
                 <StyledCardImg
                   variant="top"
                   src={`http://127.0.0.1:8000${product.image_url}`}
