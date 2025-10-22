@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Dropdown, Modal, Table, Image } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  Modal,
+  Table,
+  Image,
+  Row,
+  Col,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { IParamsGetProduct, IProduct } from "../interface/products.interface";
 import ProductsForm from "./ProductForm";
@@ -343,8 +351,129 @@ function ProductsList() {
         </Modal.Body>
       </Modal>
 
-      {/* Modal Detail Product */}
       <Modal show={showDetail} onHide={handleCloseDetail} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Detail Produk</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <Row>
+            {/* --- Kiri: Gambar Produk --- */}
+            <Col md={4}>
+              <div className="d-flex flex-column align-items-center">
+                <div
+                  style={{
+                    width: "100%",
+                    height: "200px",
+
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    cursor: "pointer",
+                  }}
+                  onClick={() =>
+                    document.getElementById("uploadInput")?.click()
+                  }
+                >
+                  {dataSelected?.image_url ? (
+                    <Image
+                      src={`http://127.0.0.1:8000${dataSelected.image_url}`}
+                      alt="Product"
+                      width={120}
+                      height={120}
+                      style={{ borderRadius: "8px", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span style={{ color: "#aaa" }}>Tidak ada gambar</span>
+                  )}
+                </div>
+              </div>
+            </Col>
+
+            {/* --- Kanan: Detail Info Produk --- */}
+            <Col md={8}>
+              <Row>
+                <Col md={6}>
+                  <StyledTitle>
+                    Nama Produk{" "}
+                    <span
+                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
+                    >
+                      *
+                    </span>
+                  </StyledTitle>
+                  <p>{dataSelected?.name || "-"}</p>
+                </Col>
+
+                <Col md={6}>
+                  <StyledTitle>
+                    Kategori Produk{" "}
+                    <span
+                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
+                    >
+                      *
+                    </span>
+                  </StyledTitle>
+                  <p>{dataSelected?.category || "-"}</p>
+                </Col>
+              </Row>
+
+              <div className="mb-3">
+                <StyledTitle>Deskripsi Produk</StyledTitle>
+                <p>{dataSelected?.description || "-"}</p>
+              </div>
+
+              <Row>
+                <Col md={6}>
+                  <StyledTitle>
+                    Harga Satuan{" "}
+                    <span
+                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
+                    >
+                      *
+                    </span>
+                  </StyledTitle>
+                  <p>
+                    {dataSelected?.price ? `Rp ${dataSelected.price}` : "-"}
+                  </p>
+                </Col>
+
+                <Col md={6}>
+                  <StyledTitle>
+                    Stok Awal{" "}
+                    <span
+                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
+                    >
+                      *
+                    </span>
+                  </StyledTitle>
+                  <p>{dataSelected?.stock || "-"}</p>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDetail}>
+            Tutup
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              handleCloseDetail();
+              onClickEdit(dataSelected!);
+            }}
+          >
+            Edit Product
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal Detail Product */}
+      {/* <Modal show={showDetail} onHide={handleCloseDetail} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detail Product</Modal.Title>
         </Modal.Header>
@@ -463,7 +592,7 @@ function ProductsList() {
             Edit Product
           </Button>
         </Modal.Footer>
-      </Modal>
+      </Modal> */}
 
       {/* Modal Delete Confirmation */}
       <Modal show={modalDelete?.show} size="sm">
