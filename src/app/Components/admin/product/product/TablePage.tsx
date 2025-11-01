@@ -19,8 +19,13 @@ import {
   CheckCircle,
   DotsThree,
   Eye,
+  PencilSimpleLine,
   XCircle,
 } from "phosphor-react";
+import {
+  DFlexColumn,
+  DFlexJustifyBetween,
+} from "../../../../react-table/flex.styled";
 
 function ProductsList() {
   const navigate = useNavigate();
@@ -56,7 +61,6 @@ function ProductsList() {
     });
     setShow(true);
   };
-
   useEffect(() => {
     const params: IParamsGetProduct = {
       skip: (currentPage - 1) * itemsPerPage,
@@ -65,11 +69,7 @@ function ProductsList() {
       order: "asc",
     };
     getProductData(params);
-
-    return () => {
-      console.log("clean");
-    };
-  }, [triggerGet, refreshTrigger, currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, refreshTrigger]);
 
   const getProductData = async (params: IParamsGetProduct) => {
     try {
@@ -81,8 +81,17 @@ function ProductsList() {
     }
   };
 
+  const refreshProductData = () => {
+    const params: IParamsGetProduct = {
+      skip: (currentPage - 1) * itemsPerPage,
+      limit: itemsPerPage,
+      sortBy: "id",
+      order: "asc",
+    };
+    getProductData(params);
+  };
   const callbackSubmit = () => {
-    triggerGet.current = Date.now();
+    refreshProductData();
     handleClose();
   };
 
@@ -353,12 +362,16 @@ function ProductsList() {
 
       <Modal show={showDetail} onHide={handleCloseDetail} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Detail Produk</Modal.Title>
+          <div className="d-flex flex-column">
+            <TitleModal>Detail Product</TitleModal>
+            <InputDetail>
+              Berikut adalah detail dari produk yang dipilih.
+            </InputDetail>
+          </div>
         </Modal.Header>
 
         <Modal.Body>
           <Row>
-            {/* --- Kiri: Gambar Produk --- */}
             <Col md={4}>
               <div className="d-flex flex-column align-items-center">
                 <div
@@ -392,209 +405,94 @@ function ProductsList() {
               </div>
             </Col>
 
-            {/* --- Kanan: Detail Info Produk --- */}
             <Col md={8}>
-              <Row>
+              <Row className="mb-3">
                 <Col md={6}>
-                  <StyledTitle>
-                    Nama Produk{" "}
-                    <span
-                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
-                    >
-                      *
-                    </span>
-                  </StyledTitle>
-                  <p>{dataSelected?.name || "-"}</p>
+                  <InputDetail>Nama Produk </InputDetail>
+                  <DescriptionDetail>
+                    {dataSelected?.name || "-"}
+                  </DescriptionDetail>
                 </Col>
 
                 <Col md={6}>
-                  <StyledTitle>
-                    Kategori Produk{" "}
-                    <span
-                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
-                    >
-                      *
-                    </span>
-                  </StyledTitle>
-                  <p>{dataSelected?.category || "-"}</p>
+                  <InputDetail>Kategori Produk </InputDetail>
+                  <DescriptionDetail>
+                    {dataSelected?.category || "-"}
+                  </DescriptionDetail>
                 </Col>
               </Row>
-
               <div className="mb-3">
-                <StyledTitle>Deskripsi Produk</StyledTitle>
-                <p>{dataSelected?.description || "-"}</p>
+                <InputDetail>Deskripsi Produk</InputDetail>
+                <DescriptionDetail>
+                  {dataSelected?.description || "-"}
+                </DescriptionDetail>
               </div>
-
               <Row>
                 <Col md={6}>
-                  <StyledTitle>
-                    Harga Satuan{" "}
-                    <span
-                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
-                    >
-                      *
-                    </span>
-                  </StyledTitle>
-                  <p>
-                    {dataSelected?.price ? `Rp ${dataSelected.price}` : "-"}
-                  </p>
+                  <InputDetail>Harga Satuan </InputDetail>
+                  <DescriptionDetail>
+                    {dataSelected?.price
+                      ? `Rp ${new Intl.NumberFormat("id-ID").format(
+                          dataSelected.price
+                        )}`
+                      : "-"}
+                  </DescriptionDetail>
                 </Col>
 
                 <Col md={6}>
-                  <StyledTitle>
-                    Stok Awal{" "}
-                    <span
-                      style={{ color: "var(--State-Danger-Base, #EB2F2F)" }}
-                    >
-                      *
-                    </span>
-                  </StyledTitle>
-                  <p>{dataSelected?.stock || "-"}</p>
+                  <CardStock>
+                    <DFlexJustifyBetween>
+                      <DFlexColumn>
+                        <InputDetail>Stok Awal </InputDetail>
+                        <DescriptionDetail>
+                          {dataSelected?.stock || "-"}
+                        </DescriptionDetail>
+                      </DFlexColumn>
+
+                      <ToglePerbarui>Perbarui</ToglePerbarui>
+                    </DFlexJustifyBetween>
+                  </CardStock>
                 </Col>
               </Row>
+              <Col md={6}>
+                <InputDetail>Status</InputDetail>
+                <DescriptionDetail>
+                  <StatusBadge $isActive={dataSelected?.status === "active"}>
+                    {dataSelected?.status === "active" ? (
+                      <>
+                        <CheckCircle size={14} weight="fill" />
+                        Active
+                      </>
+                    ) : (
+                      <>
+                        <XCircle size={14} weight="fill" />
+                        Inactive
+                      </>
+                    )}
+                  </StatusBadge>
+                </DescriptionDetail>
+              </Col>
             </Col>
           </Row>
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDetail}>
+          <StyledButtonCancel onClick={handleCloseDetail}>
             Tutup
-          </Button>
-          <Button
+          </StyledButtonCancel>
+          <StyledButton
             variant="primary"
             onClick={() => {
               handleCloseDetail();
               onClickEdit(dataSelected!);
             }}
           >
+            <PencilSimpleLine size={20} weight="fill" />
             Edit Product
-          </Button>
+          </StyledButton>
         </Modal.Footer>
       </Modal>
 
-      {/* Modal Detail Product */}
-      {/* <Modal show={showDetail} onHide={handleCloseDetail} centered size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Detail Product</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {dataSelected && (
-            <DetailContainer>
-              <DetailSection>
-                <DetailRow>
-                  <DetailLabel>Gambar Produk</DetailLabel>
-                  <DetailValue>
-                    {dataSelected.image_url ? (
-                      <Image
-                        src={`http://127.0.0.1:8000${dataSelected.image_url}`}
-                        alt="Product"
-                        width={120}
-                        height={120}
-                        className="border"
-                        style={{ borderRadius: "8px", objectFit: "cover" }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: 120,
-                          height: 120,
-                          borderRadius: "8px",
-                          backgroundColor: "#e9ecef",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#6c757d",
-                          fontSize: "14px",
-                        }}
-                      >
-                        No Image
-                      </div>
-                    )}
-                  </DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Nama Produk</DetailLabel>
-                  <DetailValue>{dataSelected.name || "-"}</DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Deskripsi</DetailLabel>
-                  <DetailValue>{dataSelected.description || "-"}</DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Kategori</DetailLabel>
-                  <DetailValue>{dataSelected.category || "-"}</DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Stok</DetailLabel>
-                  <DetailValue>
-                    <StockBadge $lowStock={dataSelected.stock < 10}>
-                      {dataSelected.stock}
-                    </StockBadge>
-                    {dataSelected.stock < 10 && (
-                      <span
-                        style={{
-                          color: "#dc3545",
-                          fontSize: "12px",
-                          marginLeft: "8px",
-                        }}
-                      >
-                        (Stok rendah)
-                      </span>
-                    )}
-                  </DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Harga</DetailLabel>
-                  <DetailValue>
-                    Rp{" "}
-                    {new Intl.NumberFormat("id-ID").format(dataSelected.price)}
-                  </DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Status</DetailLabel>
-                  <DetailValue>
-                    <StatusBadge $isActive={dataSelected.status === "active"}>
-                      {dataSelected.status === "active" ? (
-                        <>
-                          <CheckCircle size={14} weight="fill" />
-                          Active
-                        </>
-                      ) : (
-                        <>
-                          <XCircle size={14} weight="fill" />
-                          Inactive
-                        </>
-                      )}
-                    </StatusBadge>
-                  </DetailValue>
-                </DetailRow>
-              </DetailSection>
-            </DetailContainer>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDetail}>
-            Tutup
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => {
-              handleCloseDetail();
-              onClickEdit(dataSelected!);
-            }}
-          >
-            Edit Product
-          </Button>
-        </Modal.Footer>
-      </Modal> */}
-
-      {/* Modal Delete Confirmation */}
       <Modal show={modalDelete?.show} size="sm">
         <Modal.Header>
           <Modal.Title>Delete Product</Modal.Title>
@@ -617,6 +515,38 @@ function ProductsList() {
 
 export default ProductsList;
 
+const InputDetail = styled.div`
+  color: var(--Font-Secondary, #5d6471);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+`;
+
+const ToglePerbarui = styled.div`
+  color: var(--Primary-Base, #ff7900);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+`;
+
+const DescriptionDetail = styled.div`
+  color: var(--Font-Primary, #020c1f);
+
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+`;
+
+const CardStock = styled.div`
+  padding: 12px 16px;
+  gap: 4px;
+  border-radius: 12px;
+  background: var(--BG-Secondary, #f5f7fa);
+`;
+
 const TitleModal = styled.div`
   color: var(--Font-Primary, #020c1f);
 
@@ -625,12 +555,28 @@ const TitleModal = styled.div`
   font-weight: 600;
   line-height: 1.86667rem;
 `;
-// Styled Components
+
 const StyledTableContainer = styled.div`
   background: white;
   border-radius: 8px;
   border: 1px solid #e7eaf0;
   overflow: hidden;
+`;
+
+const StyledButtonCancel = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #d0d3d8;
+  color: #555;
+  cursor: pointer;
 `;
 
 const StyledTable = styled(Table)`
@@ -690,24 +636,14 @@ const ProductDescription = styled.div`
   white-space: nowrap;
 `;
 
-const StockBadge = styled.span<{ $lowStock: boolean }>`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  background-color: ${(props) => (props.$lowStock ? "#fef3f2" : "#e7f7ef")};
-  color: ${(props) => (props.$lowStock ? "#f04438" : "#12b76a")};
-  border: 1px solid ${(props) => (props.$lowStock ? "#fecdca" : "#abefc6")};
-`;
-
 const StatusBadge = styled.span<{ $isActive: boolean }>`
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
   background-color: ${(props) => (props.$isActive ? "#E9F9E9" : "#E7EAF0")};
-  color: ${(props) => (props.$isActive ? "#26A326" : "#020C1F")};
-  border: 1px solid ${(props) => (props.$isActive ? "none" : "#C0C5CC")};
+  color: ${(props) => (props.$isActive ? "#26A326" : "#5B5D63")};
+  border: 1px solid ${(props) => (props.$isActive ? "none" : "none")};
   display: inline-flex;
   align-items: center;
   gap: 4px;

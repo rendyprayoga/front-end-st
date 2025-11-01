@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Dropdown, Modal, Table, Image } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  Modal,
+  Table,
+  Image,
+  Row,
+  Col,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
@@ -8,6 +16,7 @@ import {
   CaretRight,
   CheckCircle,
   XCircle,
+  PencilSimpleLine,
 } from "phosphor-react";
 import {
   IManagementGetUser,
@@ -196,12 +205,11 @@ function ManagementList() {
           <StyledTable>
             <thead>
               <tr>
-                <th>Nama User</th>
-                <th>No Telp</th>
-                <th>Tanggal Dibuat</th>
-                <th>Status</th>
-                <th></th>
-                <th></th>
+                <th style={{ width: "38%" }}>Nama User</th>
+                <th style={{ width: "10%" }}>No Telp</th>
+                <th style={{ width: "15%" }}>Tanggal Dibuat</th>
+                <th style={{ width: "12%" }}>Status</th>
+                <th style={{ width: "8%" }}></th>
               </tr>
             </thead>
             <tbody>
@@ -214,9 +222,11 @@ function ManagementList() {
                           <Image
                             src={`http://127.0.0.1:8000${user.profile_picture}`}
                             alt="Profile"
-                            width={40}
-                            height={40}
-                            roundedCircle
+                            style={{
+                              borderRadius: "8px",
+                              width: "32px",
+                              height: "32px",
+                            }}
                             className="border me-3"
                           />
                         ) : (
@@ -252,43 +262,45 @@ function ManagementList() {
                           </>
                         ) : (
                           <>
-                            <XCircle size={14} weight="fill" />
+                            <CheckCircle size={14} weight="fill" />
                             Inactive
                           </>
                         )}
                       </StatusBadge>
                     </td>
+
                     <td>
-                      <div
-                        onClick={() => onClickDetail(user)}
-                        className="d-flex align-items-center cursor-pointer gap-2"
-                      >
-                        Lihat Detail
+                      <div className="d-flex align-items-center gap-2">
+                        <div
+                          onClick={() => onClickDetail(user)}
+                          className="d-flex align-items-center cursor-pointer gap-2"
+                          style={{ cursor: "pointer", color: "#FF7900" }}
+                        >
+                          Lihat Detail
+                        </div>
+                        <Dropdown>
+                          <StyledToggle variant="" className="border-0 p-0">
+                            <DotsThree size={22} />
+                          </StyledToggle>
+                          <StyledDropdownMenu>
+                            <Dropdown.Item
+                              onClick={() => onClickEdit(user)}
+                              className="d-flex align-items-center gap-2"
+                            >
+                              Edit
+                            </Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item
+                              onClick={() =>
+                                setModalDelete({ show: true, data: user })
+                              }
+                              className="text-danger d-flex align-items-center gap-2"
+                            >
+                              Delete
+                            </Dropdown.Item>
+                          </StyledDropdownMenu>
+                        </Dropdown>
                       </div>
-                    </td>
-                    <td>
-                      <Dropdown>
-                        <StyledToggle variant="" className="border-0 p-0">
-                          <DotsThree size={22} />
-                        </StyledToggle>
-                        <StyledDropdownMenu>
-                          <Dropdown.Item
-                            onClick={() => onClickEdit(user)}
-                            className="d-flex align-items-center gap-2"
-                          >
-                            Edit
-                          </Dropdown.Item>
-                          <Dropdown.Divider />
-                          <Dropdown.Item
-                            onClick={() =>
-                              setModalDelete({ show: true, data: user })
-                            }
-                            className="text-danger d-flex align-items-center gap-2"
-                          >
-                            Delete
-                          </Dropdown.Item>
-                        </StyledDropdownMenu>
-                      </Dropdown>
                     </td>
                   </tr>
                 </React.Fragment>
@@ -341,125 +353,169 @@ function ManagementList() {
       </Modal>
 
       {/* Modal Detail User */}
-      <Modal show={showDetail} onHide={handleCloseDetail} size="lg">
+      <Modal show={showDetail} onHide={handleCloseDetail} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Detail User</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {dataSelected && (
-            <DetailContainer>
-              <DetailSection>
-                <DetailRow>
-                  <DetailLabel>Foto Profil</DetailLabel>
-                  <DetailValue>
-                    {dataSelected.profile_picture ? (
-                      <Image
-                        src={`http://127.0.0.1:8000${dataSelected.profile_picture}`}
-                        alt="Profile"
-                        width={80}
-                        height={80}
-                        roundedCircle
-                        className="border"
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: 80,
-                          height: 80,
-                          borderRadius: "50%",
-                          backgroundColor: "#e9ecef",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#6c757d",
-                          fontSize: "14px",
-                        }}
-                      >
-                        No Image
-                      </div>
-                    )}
-                  </DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Nama Lengkap</DetailLabel>
-                  <DetailValue>{dataSelected.full_name || "-"}</DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Email</DetailLabel>
-                  <DetailValue>{dataSelected.email || "-"}</DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Nomor Telepon</DetailLabel>
-                  <DetailValue>{dataSelected.phone || "-"}</DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Role</DetailLabel>
-                  <DetailValue>{dataSelected.role || "-"}</DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Status</DetailLabel>
-                  <DetailValue>
-                    <StatusBadge $isActive={dataSelected.is_active}>
-                      {dataSelected.is_active ? "Active" : "Inactive"}
-                    </StatusBadge>
-                  </DetailValue>
-                </DetailRow>
-
-                <DetailRow>
-                  <DetailLabel>Tanggal Dibuat</DetailLabel>
-                  <DetailValue>
-                    {dataSelected.created_at
-                      ? new Date(dataSelected.created_at).toLocaleDateString(
-                          "en-GB",
-                          {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          }
-                        )
-                      : "-"}
-                  </DetailValue>
-                </DetailRow>
-
-                {dataSelected.updated_at && (
-                  <DetailRow>
-                    <DetailLabel>Terakhir Diupdate</DetailLabel>
-                    <DetailValue>
-                      {new Date(dataSelected.updated_at).toLocaleDateString(
-                        "en-GB",
-                        {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
+            <div>
+              <Row>
+                <Col md={4}>
+                  <div className="d-flex flex-column align-items-center mb-4">
+                    <div
+                      style={{
+                        width: "150px",
+                        height: "150px",
+                        background: "#F8F9FA",
+                        border: "1px dashed #D0D3D8",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {dataSelected.profile_picture ? (
+                        <img
+                          src={`http://127.0.0.1:8000${dataSelected.profile_picture}`}
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <div className="text-muted d-flex flex-column align-items-center">
+                          <i
+                            className="bi bi-person-circle"
+                            style={{ fontSize: "48px" }}
+                          ></i>
+                          <small>No Image</small>
+                        </div>
                       )}
-                    </DetailValue>
-                  </DetailRow>
-                )}
-              </DetailSection>
-            </DetailContainer>
+                    </div>
+                  </div>
+                </Col>
+
+                <Col md={8}>
+                  <Row>
+                    <Col md={6}>
+                      <div className="mb-3">
+                        <div className="font-size-14 text-muted mb-1">
+                          Nama User
+                        </div>
+                        <div>{dataSelected.full_name || "-"}</div>
+                      </div>
+                    </Col>
+                    <Col md={6}>
+                      <div className="mb-3">
+                        <div className="font-size-14 text-muted mb-1">
+                          Phone Number
+                        </div>
+                        <div>{dataSelected.phone || "-"}</div>
+                      </div>
+                    </Col>
+                  </Row>
+
+                  <div className="mb-3">
+                    <div className="font-size-14 text-muted mb-1">Email</div>
+                    <div>{dataSelected.email || "-"}</div>
+                  </div>
+
+                  <Row>
+                    <Col md={6}>
+                      <div className="mb-3">
+                        <div className="font-size-14 text-muted mb-1">Role</div>
+                        <div>{dataSelected.role || "-"}</div>
+                      </div>
+                    </Col>
+
+                    <Col md={6}>
+                      <div className="mb-3">
+                        <div className="font-size-14 text-muted mb-1">
+                          Status
+                        </div>
+                        <div>
+                          <StatusBadge $isActive={dataSelected.is_active}>
+                            {dataSelected.is_active ? (
+                              <>
+                                <CheckCircle size={14} weight="fill" />
+                                Active
+                              </>
+                            ) : (
+                              <>
+                                <XCircle size={14} weight="fill" />
+                                Inactive
+                              </>
+                            )}
+                          </StatusBadge>
+                        </div>
+                      </div>
+                    </Col>
+                  </Row>
+
+                  <Row>
+                    <Col md={6}>
+                      <div className="mb-3">
+                        <div className="font-size-14 text-muted mb-1">
+                          Tanggal Dibuat
+                        </div>
+                        <div>
+                          {dataSelected.created_at
+                            ? new Date(
+                                dataSelected.created_at
+                              ).toLocaleDateString("en-GB", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })
+                            : "-"}
+                        </div>
+                      </div>
+                    </Col>
+
+                    {dataSelected.updated_at && (
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <div className="font-size-14 text-muted mb-1">
+                            Terakhir Diupdate
+                          </div>
+                          <div>
+                            {new Date(
+                              dataSelected.updated_at
+                            ).toLocaleDateString("en-GB", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </div>
+                      </Col>
+                    )}
+                  </Row>
+                </Col>
+              </Row>
+            </div>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDetail}>
-            Tutup
-          </Button>
-          <Button
+          <StyledButtonCancel onClick={handleCloseDetail}>
+            Batal
+          </StyledButtonCancel>
+          <StyledButton
             variant="primary"
             onClick={() => {
               handleCloseDetail();
               onClickEdit(dataSelected!);
             }}
           >
+            <PencilSimpleLine size={20} weight="fill" />
             Edit User
-          </Button>
+          </StyledButton>
         </Modal.Footer>
       </Modal>
 
@@ -498,6 +554,22 @@ const TitleModal = styled.div`
 const Description = styled.div`
   font-size: 14px;
   color: #5b5d63;
+`;
+
+const StyledButtonCancel = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #d0d3d8;
+  color: #555;
+  cursor: pointer;
 `;
 
 const StyledButton = styled(Button as any)`
@@ -565,16 +637,13 @@ const StyledTableContainer = styled.div`
 const StyledTable = styled(Table)`
   margin: 0;
 
-  thead {
+  thead tr th {
     background: var(--BG-Secondary, #f5f7fa) !important;
+    color: var(--Font-Primary, #050506) !important;
 
-    th {
-      padding: 12px 16px;
-      font-weight: 600;
-      color: #5b5d63;
-      border-bottom: 1px solid #e7eaf0;
-      font-size: 14px;
-    }
+    font-weight: 500;
+    font-size: 0.93333rem;
+    padding: 12px 16px;
   }
 
   tbody {
@@ -587,7 +656,10 @@ const StyledTable = styled(Table)`
 
       td {
         padding: 16px;
-        vertical-align: middle;
+        font-size: 0.93333rem;
+        font-weight: 400;
+        line-height: 1.33333rem;
+
         border: none;
       }
     }
@@ -600,8 +672,8 @@ const StatusBadge = styled.span<{ $isActive: boolean }>`
   font-size: 12px;
   font-weight: 500;
   background-color: ${(props) => (props.$isActive ? "#E9F9E9" : "#E7EAF0")};
-  color: ${(props) => (props.$isActive ? "#26A326" : "#020C1F")};
-  border: 1px solid ${(props) => (props.$isActive ? "none" : "#C0C5CC")};
+  color: ${(props) => (props.$isActive ? "#26A326" : "#5B5D63")};
+  border: 1px solid ${(props) => (props.$isActive ? "none" : "none")};
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -702,9 +774,9 @@ const UserEmail = styled.div`
 `;
 
 const NoImagePlaceholder = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background-color: #e9ecef;
   display: flex;
   align-items: center;
