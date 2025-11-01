@@ -72,6 +72,15 @@ function ManagementList() {
     };
   }, [triggerGet, refreshTrigger, currentPage, itemsPerPage]);
 
+  const refreshProductData = () => {
+    const params: IManagementGetUser = {
+      skip: (currentPage - 1) * itemsPerPage,
+      limit: itemsPerPage,
+      sortBy: "id",
+      order: "asc",
+    };
+    getUserData(params);
+  };
   const getUserData = async (params: IManagementGetUser) => {
     try {
       const request: any = await getUsers({ ...params });
@@ -83,7 +92,7 @@ function ManagementList() {
   };
 
   const callbackSubmit = () => {
-    triggerGet.current = Date.now();
+    refreshProductData();
     handleClose();
   };
 
@@ -193,9 +202,9 @@ function ManagementList() {
             <Description>Lihat semua user yang tersedia di sistem.</Description>
           </div>
           <div className="d-flex gap-2">
-            <StyledButtonWithout onClick={() => setRefreshTrigger(Date.now())}>
+            {/* <StyledButtonWithout onClick={() => setRefreshTrigger(Date.now())}>
               Refresh Data
-            </StyledButtonWithout>
+            </StyledButtonWithout> */}
             <StyledButton onClick={handleShow}>Tambah User</StyledButton>
           </div>
         </div>
