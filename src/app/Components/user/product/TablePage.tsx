@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   Button,
   Container,
@@ -15,31 +15,22 @@ import styled from "styled-components";
 import { getProducts } from "../productsAPI";
 import { Circle, Star } from "phosphor-react";
 
-function ProductsList() {
+// Tambahkan interface untuk props
+interface ProductsListProps {
+  searchTerm?: string;
+}
+
+function ProductsList({ searchTerm = "" }: ProductsListProps) {
   const navigate = useNavigate();
-
   const [products, setProducts] = useState<IProduct[]>([]);
-
+  const [allProducts, setAllProducts] = useState<IProduct[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
   const triggerGet = useRef<number>(0);
-
-  //   const handleShow = () => {
-  //     setDataSelected({
-  //       name: "",
-  //       description: "",
-  //       price: 0,
-  //       category: "",
-  //       stock: 0,
-  //       status: "",
-  //     });
-  //     setShow(true);
-  //   };
 
   useEffect(() => {
     const params: IParamsGetProduct = {
       skip: 0,
-      limit: 10,
+      limit: 100, // Increase limit to get more products for searching
       sortBy: "id",
       order: "asc",
     };
@@ -50,10 +41,23 @@ function ProductsList() {
     };
   }, [triggerGet, refreshTrigger]);
 
+  // Filter products based on search term
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) return products;
+
+    return products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [products, searchTerm]);
+
   const getProductData = async (params: IParamsGetProduct) => {
     try {
       const request: any = await getProducts({ ...params });
       setProducts(request);
+      setAllProducts(request); // Store all products for backup
     } catch (error) {
       console.log(error);
     }
@@ -68,61 +72,78 @@ function ProductsList() {
       <div>
         <div className="d-flex justify-content-between">
           <div className="d-flex flex-column gap-2">
-            <TitleBasic>Rekomendasi</TitleBasic>
-            <Description>Produk - produk pilihan terbaik dari kami</Description>
+            <TitleBasic>
+              {searchTerm ? `Hasil Pencarian: "${searchTerm}"` : "Rekomendasi"}
+            </TitleBasic>
+            <Description>
+              {searchTerm
+                ? `Menampilkan ${filteredProducts.length} produk`
+                : "Produk - produk pilihan terbaik dari kami"}
+            </Description>
           </div>
 
           <StyledButtonWithout>Lihat Semua Produk</StyledButtonWithout>
         </div>
 
         <Row className="g-4" style={{ marginTop: "1rem" }}>
-          {products.map((product, index: number) => (
-            <Col md={3} key={product.id}>
-              <StyledCard
-                className="w-100"
-                onClick={() => onClickDetail(product)}
-              >
-                <StyledCardImg
-                  variant="top"
-                  src={`http://127.0.0.1:8000${product.image_url}`}
-                />
-                <StyledCardBody>
-                  <TitleBasic>{product.name}</TitleBasic>
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product, index: number) => (
+              <Col md={3} key={product.id}>
+                <StyledCard
+                  className="w-100"
+                  onClick={() => onClickDetail(product)}
+                >
+                  <StyledCardImg
+                    variant="top"
+                    src={`http://127.0.0.1:8000${product.image_url}`}
+                  />
+                  <StyledCardBody>
+                    <TitleBasic>{product.name}</TitleBasic>
 
-                  <PriceWrapper>
-                    <Price>
-                      Rp {new Intl.NumberFormat("id-ID").format(product.price)}
-                    </Price>
-                    <DiscountBadge>-12%</DiscountBadge>
-                  </PriceWrapper>
+                    <PriceWrapper>
+                      <Price>
+                        Rp{" "}
+                        {new Intl.NumberFormat("id-ID").format(product.price)}
+                      </Price>
+                      <DiscountBadge>-12%</DiscountBadge>
+                    </PriceWrapper>
 
-                  <BottomInfo>
-                    <Star
-                      size={16}
-                      weight="fill"
-                      style={{ color: "#FFB700" }}
-                    />
-                    <Description className="d-flex align-center">
-                      4.9
-                    </Description>
-                    <Circle
-                      size={10}
-                      weight="fill"
-                      style={{ color: "#E6E9F0" }}
-                    />
-                    <Description>{product.stock} Stock</Description>
-                  </BottomInfo>
-                </StyledCardBody>
-              </StyledCard>
+                    <BottomInfo>
+                      <Star
+                        size={16}
+                        weight="fill"
+                        style={{ color: "#FFB700" }}
+                      />
+                      <Description className="d-flex align-center">
+                        4.9
+                      </Description>
+                      <Circle
+                        size={10}
+                        weight="fill"
+                        style={{ color: "#E6E9F0" }}
+                      />
+                      <Description>{product.stock} Stock</Description>
+                    </BottomInfo>
+                  </StyledCardBody>
+                </StyledCard>
+              </Col>
+            ))
+          ) : (
+            <Col md={12}>
+              <div className="text-center py-5">
+                <Description>
+                  {searchTerm
+                    ? `Tidak ditemukan produk dengan kata kunci "${searchTerm}"`
+                    : "Tidak ada produk yang tersedia"}
+                </Description>
+              </div>
             </Col>
-          ))}
+          )}
         </Row>
       </div>
     </>
   );
 }
-
-export default ProductsList;
 
 const StyledCardBody = styled(Card.Body as any)`
   display: flex;
@@ -152,6 +173,7 @@ const BottomInfo = styled.div`
   gap: 0.5rem;
   font-size: 0.85rem;
 `;
+
 const StyledCardImg = styled(Card.Img as any)`
   height: 12.25rem;
   object-fit: cover;
@@ -176,9 +198,9 @@ const Price = styled.div`
   font-weight: 600;
   line-height: 140%;
 `;
+
 const TitleBasic = styled.div`
   color: #000;
-
   font-family: Inter;
   font-size: 1rem;
   font-style: normal;
@@ -194,18 +216,19 @@ const Description = styled.div`
 const StyledButtonWithout = styled(Button as any)`
   height: 40px;
   padding: 0 12px;
-  color:var(--black)
+  color: var(--black);
   border-radius: 10px;
   border: 1px solid var(--Border-Primary, #e7eaf0);
   background: var(--Background-Primary, #fff);
-    font-size: 0.875rem;
-
-font-weight: 500;
-line-height: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
 
   &:hover {
-     background: var(--Background-Primary, #fff);
-       border: 1px solid var(--Border-Primary, #e7eaf0);
-         color:var(--black)
+    background: var(--Background-Primary, #fff);
+    border: 1px solid var(--Border-Primary, #e7eaf0);
+    color: var(--black);
   }
 `;
+
+export default ProductsList;

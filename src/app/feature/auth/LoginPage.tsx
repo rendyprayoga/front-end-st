@@ -53,21 +53,43 @@ const LoginPage: React.FC = () => {
     resolver: yupResolver(validationSchema),
   });
 
+  // Di LoginPage.tsx - HANYA ubah function onSubmit
   const onSubmit = async (data: LoginFormInputs) => {
     try {
       dispatch(loginStart());
       const res = await authService.login(data.email, data.password);
 
-      const userData = {
-        email: data.email,
-        role: res.user?.role,
-        token: res.token,
+      const userDataToStore = {
+        email: res.user?.email || data.email,
+        full_name: res.user?.full_name || "User",
+        role: res.user?.role || "user",
+        profile_picture: "",
       };
 
       localStorage.setItem("token", res.token);
-      localStorage.setItem("user", JSON.stringify(res.user));
+      localStorage.setItem("user", JSON.stringify(userDataToStore));
 
-      dispatch(loginSuccess(userData));
+      dispatch(
+        loginSuccess({
+          token: res.token,
+          ...userDataToStore,
+        })
+      );
+
+      setTimeout(async () => {
+        try {
+          const userDetail = await authService.getCurrentUser(data.email);
+          if (userDetail && userDetail.profile_picture) {
+            const completeUserData = {
+              ...userDataToStore,
+              profile_picture: userDetail.profile_picture,
+            };
+            localStorage.setItem("user", JSON.stringify(completeUserData));
+          }
+        } catch (error) {
+          console.log("Gagal ambil data lengkap:", error);
+        }
+      }, 1000);
 
       if (res.user?.role === "admin") {
         navigate("/product-details");

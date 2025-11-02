@@ -1,9 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { MagnifyingGlass } from "phosphor-react";
 import { DFlex } from "../../../react-table/flex.styled";
 
-export default function HeroSection() {
+// Tambahkan interface untuk props
+interface HeroSectionProps {
+  onSearch?: (searchTerm: string) => void;
+}
+
+export default function HeroSection({ onSearch }: HeroSectionProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearch = () => {
+    if (onSearch) {
+      onSearch(searchTerm);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   return (
     <HeroWrapper>
       <Overlay />
@@ -15,11 +34,16 @@ export default function HeroSection() {
 
         <DFlex>
           <SearchBar>
-            <input type="text" placeholder="Cari produk" />
+            <input
+              type="text"
+              placeholder="Cari produk"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
           </SearchBar>
 
-          <ButtonSearch>
-            {" "}
+          <ButtonSearch onClick={handleSearch}>
             <MagnifyingGlass size={20} />
           </ButtonSearch>
         </DFlex>

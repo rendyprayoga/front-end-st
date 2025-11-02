@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Navbar, NavDropdown } from "react-bootstrap";
@@ -6,6 +6,7 @@ import { UserCircle, CaretDown } from "phosphor-react";
 import { DFlex } from "../../react-table/flex.styled";
 import IconSignIn from "../icon/SignInLogo/IconSignIn";
 import IconSignUser from "../icon/SignInLogo/IconSignUser";
+import { authService } from "../../feature/auth/services/auth.service";
 
 export default function NavbarUser() {
   const navigate = useNavigate();
@@ -15,6 +16,24 @@ export default function NavbarUser() {
     ? JSON.parse(storedUser)
     : { full_name: "User", profile_picture: "" };
 
+  useEffect(() => {
+    if ((!user.profile_picture || user.profile_picture === "") && storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      const syncUserData = async () => {
+        try {
+          const userDetail = await authService.getCurrentUser(parsedUser.email);
+          if (userDetail && userDetail.profile_picture) {
+            const updatedUser = { ...parsedUser, ...userDetail };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          }
+        } catch (error) {
+          console.log("Sync gagal:", error);
+        }
+      };
+
+      setTimeout(syncUserData, 2000);
+    }
+  }, [storedUser]);
   const full_name = user.full_name || "User";
 
   const handleLogout = () => {

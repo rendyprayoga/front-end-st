@@ -54,7 +54,6 @@ const FlexRow = styled(DFlex)`
 
 const DFlexColumn = styled.div`
   display: flex !important;
-  gap: 1rem;
   flex-direction: column;
 `
 
