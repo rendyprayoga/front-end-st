@@ -318,7 +318,6 @@ function ManagementList() {
           </StyledTable>
         </StyledTableContainer>
 
-        {/* Footer dengan pagination */}
         <StyledTableFooter>
           <div className="footer-left">
             <span>Menampilkan</span>
@@ -334,9 +333,6 @@ function ManagementList() {
           </div>
 
           <div className="footer-right">
-            {/* <PaginationInfo>
-              Menampilkan {startItem}-{endItem} dari {totalData}
-            </PaginationInfo> */}
             <PaginationContainer>{renderPaginationItems()}</PaginationContainer>
           </div>
         </StyledTableFooter>
